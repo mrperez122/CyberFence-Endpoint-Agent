@@ -1,3 +1,4 @@
+#![cfg(target_os = "windows")]
 //! Windows Service integration for the CyberFence Endpoint Agent.
 //!
 //! This module provides everything needed to run `cf-agent.exe` as a

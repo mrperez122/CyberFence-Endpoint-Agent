@@ -1,0 +1,18 @@
+[package]
+name        = "cf-ipc"
+description = "Shared IPC types and named pipe transport for cf-agent ↔ UI communication"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+cf-common   = { path = "../cf-common" }
+serde       = { workspace = true }
+serde_json  = { workspace = true }
+anyhow      = { workspace = true }
+thiserror   = { workspace = true }
+tokio       = { workspace = true }
+tracing     = { workspace = true }
+chrono      = { workspace = true }
+uuid        = { workspace = true }
+async-trait = "0.1"

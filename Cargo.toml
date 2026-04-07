@@ -6,6 +6,7 @@ members = [
     "crates/cf-monitor",
     "crates/cf-logger",
     "crates/cf-scanner",
+    "crates/cf-ipc",
     "agent",
     "ui/src-tauri",
 ]

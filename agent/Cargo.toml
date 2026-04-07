@@ -15,10 +15,14 @@ cf-config   = { path = "../crates/cf-config" }
 cf-monitor  = { path = "../crates/cf-monitor" }
 cf-logger   = { path = "../crates/cf-logger" }
 cf-scanner  = { path = "../crates/cf-scanner" }
+cf-ipc      = { path = "../crates/cf-ipc" }
 
 tokio       = { workspace = true }
 anyhow      = { workspace = true }
 tracing     = { workspace = true }
+uuid        = { workspace = true }
+chrono      = { workspace = true }
+async-trait = "0.1"
 
 tokio-util   = { workspace = true }
 
