@@ -1,0 +1,26 @@
+[package]
+name    = "cyberfence-ui"
+version = "0.1.0"
+edition = "2021"
+authors = ["CyberFence Engineering <eng@cyberfenceplatform.com>"]
+
+[lib]
+name          = "cyberfence_ui_lib"
+crate-type    = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "cyberfence-ui"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri        = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-shell = "2"
+serde        = { version = "1", features = ["derive"] }
+serde_json   = "1"
+tokio        = { version = "1", features = ["full"] }
+chrono       = { version = "0.4", features = ["serde"] }
+uuid         = { version = "1", features = ["v4", "serde"] }
+tracing      = "0.1"

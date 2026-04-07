@@ -1,0 +1,168 @@
+/* ── CyberFence Brand System ─────────────────────────────────────────────── */
+/* Palette from brand standards doc                                            */
+:root {
+  --cf-bg:          #0D1F0E;   /* darkest green — main background              */
+  --cf-bg-card:     #171717;   /* near-black — card surface                    */
+  --cf-bg-card-2:   #1c2e1d;   /* slightly lighter card                        */
+  --cf-bg-input:    #232e23;   /* input/field background                       */
+  --cf-border:      #2a3d2b;   /* subtle border                                */
+  --cf-border-2:    #3a4e3a;   /* lighter border                               */
+
+  /* Greens — brand primary palette */
+  --cf-green-1:     #ABE551;   /* lightest — accent, badges, active states     */
+  --cf-green-2:     #99DC41;   /* bright green — primary actions               */
+  --cf-green-3:     #74D161;   /* medium green — hover, secondary              */
+  --cf-green-4:     #008B47;   /* deep green — success states                  */
+  --cf-green-5:     #507027;   /* dark green — muted accent                    */
+  --cf-green-6:     #323D21;   /* very dark green — surface alt                */
+
+  /* Status colors */
+  --cf-protected:   #ABE551;
+  --cf-at-risk:     #F5A623;
+  --cf-danger:      #E05252;
+  --cf-warning:     #F5A623;
+  --cf-info:        #5BB8FF;
+
+  /* Text */
+  --cf-text:        #E0FFD9;   /* near-white with green tint — primary text    */
+  --cf-text-2:      #99C27A;   /* muted green text                             */
+  --cf-text-3:      #5a7a5a;   /* faint — timestamps, labels                  */
+  --cf-text-inv:    #0D1F0E;   /* dark text on bright backgrounds              */
+
+  /* Typography — Montserrat (from brand standards) */
+  --cf-font:        'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Layout */
+  --sidebar-w:      200px;
+  --topbar-h:       56px;
+  --radius:         8px;
+  --radius-lg:      12px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--cf-bg);
+  color: var(--cf-text);
+  font-family: var(--cf-font);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--cf-border-2); border-radius: 999px; }
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--cf-green-1);
+  outline-offset: 2px;
+}
+
+button { cursor: pointer; font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+.text-green    { color: var(--cf-green-1); }
+.text-muted    { color: var(--cf-text-2); }
+.text-faint    { color: var(--cf-text-3); }
+.text-danger   { color: var(--cf-danger); }
+.text-warning  { color: var(--cf-warning); }
+.text-bold     { font-weight: 700; }
+.text-sm       { font-size: 12px; }
+.text-xs       { font-size: 11px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-protected { background: rgba(171,229,81,0.15);  color: var(--cf-green-1); }
+.badge-at-risk   { background: rgba(245,166,35,0.15);  color: var(--cf-warning); }
+.badge-danger    { background: rgba(224,82,82,0.15);   color: var(--cf-danger); }
+.badge-info      { background: rgba(91,184,255,0.12);  color: var(--cf-info); }
+.badge-muted     { background: rgba(255,255,255,0.06); color: var(--cf-text-2); }
+
+.card {
+  background: var(--cf-bg-card);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--cf-green-2);
+  color: var(--cf-text-inv);
+}
+.btn-primary:hover {
+  background: var(--cf-green-1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(171,229,81,0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--cf-text);
+  border: 1px solid var(--cf-border-2);
+}
+.btn-outline:hover {
+  border-color: var(--cf-green-3);
+  color: var(--cf-green-3);
+  background: rgba(116,209,97,0.06);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--cf-text-2);
+  padding: 6px 10px;
+}
+.btn-ghost:hover {
+  color: var(--cf-green-1);
+  background: rgba(171,229,81,0.08);
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(171,229,81,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(171,229,81,0); }
+}
+
+@keyframes scan-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fade-in 0.25s ease forwards;
+}
