@@ -1,0 +1,34 @@
+# Rust / Cargo
+/target/
+**/target/
+Cargo.lock
+
+# Generated bindings (Phase 2 — ClamAV bindgen)
+**/src/bindings.rs
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.jsonl
+*.log
+
+# Config with secrets (ship config.toml.example instead)
+# config.toml  # leave tracked — it's the default template
+
+# ClamAV definitions (too large for git)
+definitions/*.cvd
+definitions/*.cld
+
+# Build artifacts
+*.exe
+*.dll
+*.pdb
+*.msi
+*.pkg

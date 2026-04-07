@@ -1,0 +1,17 @@
+[package]
+name        = "cf-logger"
+description = "Structured JSON logging and event persistence for the CyberFence agent"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+cf-common       = { path = "../cf-common" }
+cf-config       = { path = "../cf-config" }
+tokio           = { workspace = true }
+serde           = { workspace = true }
+serde_json      = { workspace = true }
+anyhow          = { workspace = true }
+tracing         = { workspace = true }
+tracing-subscriber = { workspace = true }
+chrono          = { workspace = true }

@@ -1,0 +1,23 @@
+[package]
+name        = "cf-agent"
+description = "CyberFence Endpoint Protection Agent — background service binary"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "cf-agent"
+path = "src/main.rs"
+
+[dependencies]
+cf-common   = { path = "../crates/cf-common" }
+cf-config   = { path = "../crates/cf-config" }
+cf-monitor  = { path = "../crates/cf-monitor" }
+cf-logger   = { path = "../crates/cf-logger" }
+
+tokio       = { workspace = true }
+anyhow      = { workspace = true }
+tracing     = { workspace = true }
+
+# Graceful shutdown signal handling
+tokio-util  = { version = "0.7", features = ["rt"] }
