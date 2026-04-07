@@ -14,6 +14,7 @@ cf-common   = { path = "../crates/cf-common" }
 cf-config   = { path = "../crates/cf-config" }
 cf-monitor  = { path = "../crates/cf-monitor" }
 cf-logger   = { path = "../crates/cf-logger" }
+cf-scanner  = { path = "../crates/cf-scanner" }
 
 tokio       = { workspace = true }
 anyhow      = { workspace = true }

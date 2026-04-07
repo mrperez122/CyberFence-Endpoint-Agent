@@ -5,6 +5,7 @@ members = [
     "crates/cf-config",
     "crates/cf-monitor",
     "crates/cf-logger",
+    "crates/cf-scanner",
     "agent",
 ]
 
@@ -32,7 +33,8 @@ tracing             = "0.1"
 tracing-subscriber  = { version = "0.3", features = ["env-filter", "json", "chrono"] }
 
 # File watching
-notify  = "6.1"
+notify   = "6.1"
+walkdir  = "2.5"
 
 # Config
 toml    = "0.8"

@@ -1,0 +1,23 @@
+[package]
+name        = "cf-scanner"
+description = "ClamAV-backed malware scanning engine for the CyberFence agent"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+cf-common   = { path = "../cf-common" }
+cf-config   = { path = "../cf-config" }
+tokio       = { workspace = true }
+serde       = { workspace = true }
+serde_json  = { workspace = true }
+anyhow      = { workspace = true }
+thiserror   = { workspace = true }
+tracing     = { workspace = true }
+chrono      = { workspace = true }
+uuid        = { workspace = true }
+walkdir     = "2.5"
+
+[dev-dependencies]
+tempfile    = "3.10"
+tokio       = { workspace = true }

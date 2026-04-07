@@ -49,3 +49,33 @@ excluded_extensions = [
     "part",         # partial downloads
     "crdownload",   # Chrome partial downloads
 ]
+
+# ── Scanner ───────────────────────────────────────────────────────────────────
+[scanner]
+enabled           = true
+
+# Path to clamscan binary. Leave empty to auto-detect.
+# Windows: C:\Program Files\ClamAV\clamscan.exe (auto-detected)
+# macOS:   /opt/homebrew/bin/clamscan (auto-detected via brew)
+# clamscan_path = "/usr/local/bin/clamscan"
+
+# ClamAV definitions directory. Leave empty for ClamAV default.
+# definitions_dir = "/var/lib/clamav"
+
+# Maximum file size to scan (MB). Larger files are skipped.
+max_file_size_mb  = 256
+
+# Timeout per file in seconds (prevents hanging on corrupted archives).
+timeout_secs      = 30
+
+# Parallel scan workers. 0 = half of CPU cores.
+worker_threads    = 0
+
+# Whether to scan inside archives (.zip, .tar, .gz, etc.)
+scan_archives     = true
+
+# Directories for full scan. Leave empty to use watch_dirs.
+# full_scan_paths = [
+#     "C:\\Users",
+#     "D:\\Projects",
+# ]

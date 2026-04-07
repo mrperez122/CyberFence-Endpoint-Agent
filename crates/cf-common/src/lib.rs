@@ -5,6 +5,8 @@
 
 pub mod errors;
 pub mod events;
+pub mod scan;
 
 pub use errors::CfError;
 pub use events::{FileEvent, FileEventKind, ScanReadiness, Severity};
+pub use scan::{ScanProgress, ScanResult, ScanSummary, ScanType, ScanVerdict};

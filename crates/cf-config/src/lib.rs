@@ -75,6 +75,10 @@ pub struct AgentConfig {
     /// File monitoring settings.
     #[serde(default)]
     pub monitor: MonitorConfig,
+
+    /// Malware scanning settings.
+    #[serde(default)]
+    pub scanner: ScannerConfig,
 }
 
 impl Default for AgentConfig {
@@ -83,6 +87,7 @@ impl Default for AgentConfig {
             log_level: "INFO".into(),
             log_dir:   None,
             monitor:   MonitorConfig::default(),
+            scanner:   ScannerConfig::default(),
         }
     }
 }
@@ -279,3 +284,64 @@ mod tests {
         assert_eq!(config.monitor.max_file_size_mb, 100);
     }
 }
+
+// ── ScannerConfig ─────────────────────────────────────────────────────────────
+
+/// Configuration for the scanning engine (cf-scanner).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScannerConfig {
+    /// Whether scanning is enabled. When false, FileEvents are still logged
+    /// but not passed to ClamAV.
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+
+    /// Path to the `clamscan` (or `clamscan.exe`) binary.
+    /// Leave empty to auto-detect from PATH.
+    #[serde(default)]
+    pub clamscan_path: Option<std::path::PathBuf>,
+
+    /// Path to the ClamAV virus definitions directory.
+    /// Leave empty to use the ClamAV default.
+    #[serde(default)]
+    pub definitions_dir: Option<std::path::PathBuf>,
+
+    /// Maximum file size in MB to scan. Larger files are marked Skipped.
+    #[serde(default = "default_scan_max_mb")]
+    pub max_file_size_mb: u64,
+
+    /// Timeout in seconds for a single file scan.
+    /// Prevents the agent from hanging on corrupted/malicious archives.
+    #[serde(default = "default_scan_timeout_secs")]
+    pub timeout_secs: u64,
+
+    /// Number of parallel scan workers.
+    /// 0 = use half the available CPU cores.
+    #[serde(default)]
+    pub worker_threads: usize,
+
+    /// Whether to scan inside archives (.zip, .tar, .gz, etc.)
+    #[serde(default = "default_true")]
+    pub scan_archives: bool,
+
+    /// Paths to include in a full/quick scan (in addition to watch dirs).
+    #[serde(default)]
+    pub full_scan_paths: Vec<std::path::PathBuf>,
+}
+
+impl Default for ScannerConfig {
+    fn default() -> Self {
+        Self {
+            enabled:          true,
+            clamscan_path:    None,
+            definitions_dir:  None,
+            max_file_size_mb: 256,
+            timeout_secs:     30,
+            worker_threads:   0,
+            scan_archives:    true,
+            full_scan_paths:  vec![],
+        }
+    }
+}
+
+fn default_scan_max_mb()      -> u64 { 256 }
+fn default_scan_timeout_secs() -> u64 { 30 }
