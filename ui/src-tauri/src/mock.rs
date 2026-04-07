@@ -1,33 +1,32 @@
-//! Realistic mock data for Phase 1 (no backend connected yet).
-//! Phase 2: replace each function with a named pipe call to cf-agent.
+//! Mock data for development and testing.
+//!
+//! In production (Phase 3), commands.rs calls log_reader or named pipe IPC.
+//! In development, commands.rs calls these mock functions when:
+//!   - No scan log files exist yet
+//!   - The CYBERFENCE_USE_MOCK env var is set
+//!   - The named pipe is not available
+//!
+//! All data structures here are JSON-serializable and match the Svelte
+//! TypeScript interfaces in ui/src/lib/types.ts exactly.
 
+use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc, Duration};
 
-// ── Shared types (mirror cf-common for the frontend) ─────────────────────────
+// ── Shared types ──────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentStatus {
-    pub protection_status:    ProtectionStatus,
-    pub realtime_monitoring:  bool,
-    pub scanning_enabled:     bool,
-    pub last_scan_time:       Option<DateTime<Utc>>,
-    pub definitions_version:  String,
+    pub protection_status:     String, // "PROTECTED" | "AT_RISK" | "SCANNING" | "DISABLED"
+    pub realtime_monitoring:   bool,
+    pub scanning_enabled:      bool,
+    pub last_scan_time:        Option<String>, // ISO 8601
+    pub definitions_version:   String,
     pub definitions_age_hours: u32,
     pub files_monitored_today: u64,
-    pub threats_today:        u32,
-    pub threats_total:        u32,
-    pub agent_version:        String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ProtectionStatus {
-    Protected,
-    AtRisk,
-    Scanning,
-    Disabled,
+    pub threats_today:         u32,
+    pub threats_total:         u32,
+    pub agent_version:         String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,8 +34,8 @@ pub enum ProtectionStatus {
 pub struct ScanHistoryEntry {
     pub id:            String,
     pub scan_type:     String,   // "QUICK_SCAN" | "FULL_SCAN" | "ON_ACCESS"
-    pub started_at:    DateTime<Utc>,
-    pub completed_at:  DateTime<Utc>,
+    pub started_at:    String,
+    pub completed_at:  String,
     pub files_scanned: u64,
     pub threats_found: u32,
     pub duration_secs: i64,
@@ -46,131 +45,141 @@ pub struct ScanHistoryEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ThreatEntry {
-    pub id:             String,
-    pub detected_at:    DateTime<Utc>,
-    pub path:           String,
-    pub verdict:        String,  // "INFECTED" | "SUSPICIOUS"
-    pub threat_name:    String,
-    pub severity:       String,  // "CRITICAL" | "HIGH" | "MEDIUM"
-    pub action_taken:   String,  // "QUARANTINED" | "LOGGED" | "DELETED"
-    pub scan_type:      String,
+    pub id:           String,
+    pub detected_at:  String,
+    pub path:         String,
+    pub verdict:      String,    // "INFECTED" | "SUSPICIOUS"
+    pub threat_name:  String,
+    pub severity:     String,    // "CRITICAL" | "MEDIUM"
+    pub action_taken: String,    // "QUARANTINED" | "LOGGED"
+    pub scan_type:    String,
+    pub extension:    String,
+    pub size_bytes:   Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DefinitionsInfo {
     pub version:      String,
-    pub updated_at:   DateTime<Utc>,
+    pub updated_at:   String,
     pub age_hours:    u32,
     pub virus_count:  u64,
     pub status:       String,   // "UP_TO_DATE" | "OUTDATED" | "UPDATING"
 }
 
-// ── Mock data generators ──────────────────────────────────────────────────────
+// ── Mock data builders ────────────────────────────────────────────────────────
+
+fn iso(offset_hours: i64) -> String {
+    (Utc::now() - Duration::hours(offset_hours)).to_rfc3339()
+}
 
 pub fn mock_status() -> AgentStatus {
     AgentStatus {
-        protection_status:    ProtectionStatus::Protected,
-        realtime_monitoring:  true,
-        scanning_enabled:     true,
-        last_scan_time:       Some(Utc::now() - Duration::hours(2)),
-        definitions_version:  "26481".to_string(),
+        protection_status:     "PROTECTED".into(),
+        realtime_monitoring:   true,
+        scanning_enabled:      true,
+        last_scan_time:        Some(iso(2)),
+        definitions_version:   "26481".into(),
         definitions_age_hours: 4,
         files_monitored_today: 1_247,
-        threats_today:        0,
-        threats_total:        3,
-        agent_version:        "0.1.0".to_string(),
+        threats_today:         0,
+        threats_total:         3,
+        agent_version:         "0.1.0".into(),
     }
 }
 
 pub fn mock_scan_history() -> Vec<ScanHistoryEntry> {
-    let now = Utc::now();
     vec![
         ScanHistoryEntry {
-            id:            "s1".to_string(),
-            scan_type:     "QUICK_SCAN".to_string(),
-            started_at:    now - Duration::hours(2),
-            completed_at:  now - Duration::hours(2) + Duration::minutes(3),
+            id:            "s1".into(),
+            scan_type:     "QUICK_SCAN".into(),
+            started_at:    iso(2),
+            completed_at:  iso(1),
             files_scanned: 847,
             threats_found: 0,
             duration_secs: 183,
-            status:        "COMPLETE".to_string(),
+            status:        "COMPLETE".into(),
         },
         ScanHistoryEntry {
-            id:            "s2".to_string(),
-            scan_type:     "FULL_SCAN".to_string(),
-            started_at:    now - Duration::days(1),
-            completed_at:  now - Duration::days(1) + Duration::minutes(22),
+            id:            "s2".into(),
+            scan_type:     "FULL_SCAN".into(),
+            started_at:    iso(26),
+            completed_at:  iso(25),
             files_scanned: 48_391,
             threats_found: 2,
             duration_secs: 1340,
-            status:        "COMPLETE".to_string(),
+            status:        "COMPLETE".into(),
         },
         ScanHistoryEntry {
-            id:            "s3".to_string(),
-            scan_type:     "QUICK_SCAN".to_string(),
-            started_at:    now - Duration::days(2),
-            completed_at:  now - Duration::days(2) + Duration::minutes(4),
+            id:            "s3".into(),
+            scan_type:     "QUICK_SCAN".into(),
+            started_at:    iso(50),
+            completed_at:  iso(49),
             files_scanned: 912,
             threats_found: 1,
             duration_secs: 241,
-            status:        "COMPLETE".to_string(),
+            status:        "COMPLETE".into(),
         },
         ScanHistoryEntry {
-            id:            "s4".to_string(),
-            scan_type:     "FULL_SCAN".to_string(),
-            started_at:    now - Duration::days(7),
-            completed_at:  now - Duration::days(7) + Duration::minutes(19),
+            id:            "s4".into(),
+            scan_type:     "FULL_SCAN".into(),
+            started_at:    iso(170),
+            completed_at:  iso(169),
             files_scanned: 47_102,
             threats_found: 0,
             duration_secs: 1148,
-            status:        "COMPLETE".to_string(),
+            status:        "COMPLETE".into(),
         },
     ]
 }
 
 pub fn mock_threats() -> Vec<ThreatEntry> {
-    let now = Utc::now();
     vec![
         ThreatEntry {
-            id:           "t1".to_string(),
-            detected_at:  now - Duration::days(1) - Duration::hours(3),
-            path:         "C:\\Users\\Carlos\\Downloads\\crack_photoshop.exe".to_string(),
-            verdict:      "INFECTED".to_string(),
-            threat_name:  "Win.Trojan.Generic-9953295-0".to_string(),
-            severity:     "CRITICAL".to_string(),
-            action_taken: "QUARANTINED".to_string(),
-            scan_type:    "FULL_SCAN".to_string(),
+            id:           "t1".into(),
+            detected_at:  iso(27),
+            path:         r"C:\Users\Carlos\Downloads\crack_photoshop.exe".into(),
+            verdict:      "INFECTED".into(),
+            threat_name:  "Win.Trojan.Generic-9953295-0".into(),
+            severity:     "CRITICAL".into(),
+            action_taken: "QUARANTINED".into(),
+            scan_type:    "FULL_SCAN".into(),
+            extension:    "exe".into(),
+            size_bytes:   Some(4_234_120),
         },
         ThreatEntry {
-            id:           "t2".to_string(),
-            detected_at:  now - Duration::days(1) - Duration::hours(3) + Duration::minutes(1),
-            path:         "C:\\Users\\Carlos\\Downloads\\keygen.dll".to_string(),
-            verdict:      "SUSPICIOUS".to_string(),
-            threat_name:  "Heuristics.Broken.Executable".to_string(),
-            severity:     "MEDIUM".to_string(),
-            action_taken: "LOGGED".to_string(),
-            scan_type:    "FULL_SCAN".to_string(),
+            id:           "t2".into(),
+            detected_at:  iso(27),
+            path:         r"C:\Users\Carlos\Downloads\keygen.dll".into(),
+            verdict:      "SUSPICIOUS".into(),
+            threat_name:  "Heuristics.Broken.Executable".into(),
+            severity:     "MEDIUM".into(),
+            action_taken: "LOGGED".into(),
+            scan_type:    "FULL_SCAN".into(),
+            extension:    "dll".into(),
+            size_bytes:   Some(128_000),
         },
         ThreatEntry {
-            id:           "t3".to_string(),
-            detected_at:  now - Duration::days(2) - Duration::hours(7),
-            path:         "C:\\Users\\Carlos\\Desktop\\invoice_doc.exe".to_string(),
-            verdict:      "INFECTED".to_string(),
-            threat_name:  "Win.Malware.Emotet-9827123-1".to_string(),
-            severity:     "CRITICAL".to_string(),
-            action_taken: "QUARANTINED".to_string(),
-            scan_type:    "ON_ACCESS".to_string(),
+            id:           "t3".into(),
+            detected_at:  iso(55),
+            path:         r"C:\Users\Carlos\Desktop\invoice_doc.exe".into(),
+            verdict:      "INFECTED".into(),
+            threat_name:  "Win.Malware.Emotet-9827123-1".into(),
+            severity:     "CRITICAL".into(),
+            action_taken: "QUARANTINED".into(),
+            scan_type:    "ON_ACCESS".into(),
+            extension:    "exe".into(),
+            size_bytes:   Some(2_048_576),
         },
     ]
 }
 
 pub fn mock_definitions() -> DefinitionsInfo {
     DefinitionsInfo {
-        version:     "26481".to_string(),
-        updated_at:  Utc::now() - Duration::hours(4),
+        version:     "26481".into(),
+        updated_at:  iso(4),
         age_hours:   4,
         virus_count: 8_723_142,
-        status:      "UP_TO_DATE".to_string(),
+        status:      "UP_TO_DATE".into(),
     }
 }

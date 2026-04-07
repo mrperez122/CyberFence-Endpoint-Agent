@@ -7,6 +7,7 @@ members = [
     "crates/cf-logger",
     "crates/cf-scanner",
     "agent",
+    "ui/src-tauri",
 ]
 
 [workspace.package]
