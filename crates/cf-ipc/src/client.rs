@@ -8,9 +8,9 @@
 //! ```
 
 use anyhow::{Context, Result};
-use tracing::{debug, warn};
 
-use crate::protocol::{Command, Response, AgentEvent};
+
+use crate::protocol::{Command, Response};
 
 // ── IpcClient ─────────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@
 //! so the types are always in sync.
 
 use serde::{Deserialize, Serialize};
-use cf_common::scan::{ScanType, ScanVerdict};
+// ScanType and ScanVerdict available from cf_common if needed
 
 // ── Commands (UI → Agent) ─────────────────────────────────────────────────────
 

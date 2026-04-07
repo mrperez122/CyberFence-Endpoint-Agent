@@ -9,8 +9,8 @@
 //! clients via a tokio broadcast channel.
 
 use std::sync::Arc;
-use tokio::sync::{broadcast, Mutex};
-use tracing::{error, info, warn};
+use tokio::sync::broadcast;
+use tracing::{info, warn};
 use anyhow::Result;
 
 use crate::protocol::{AgentEvent, Command, Response};

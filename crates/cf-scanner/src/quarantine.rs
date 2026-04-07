@@ -33,7 +33,7 @@ use aes_gcm::{
 use aes_gcm::aead::rand_core::RngCore;
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
-use tracing::{info, warn};
+use tracing::info;
 use uuid::Uuid;
 
 // ── Vault directory resolution ────────────────────────────────────────────────
@@ -248,8 +248,7 @@ fn unwrap_key(wrapped: &[u8]) -> Result<Vec<u8>> {
 #[cfg(target_os = "windows")]
 fn dpapi_protect(data: &[u8]) -> Result<Vec<u8>> {
     use windows::Win32::Security::Cryptography::{
-        CryptProtectData, CRYPTPROTECT_LOCAL_MACHINE,
-        CRYPT_INTEGER_BLOB,
+        CryptProtectData, CRYPTPROTECT_LOCAL_MACHINE, CRYPT_INTEGER_BLOB,
     };
 
     let mut input = CRYPT_INTEGER_BLOB {
@@ -261,10 +260,10 @@ fn dpapi_protect(data: &[u8]) -> Result<Vec<u8>> {
     unsafe {
         CryptProtectData(
             &mut input,
-            None,              // description
-            None,              // entropy
-            None,              // reserved
-            None,              // prompt struct
+            None,
+            None,
+            None,
+            None,
             CRYPTPROTECT_LOCAL_MACHINE,
             &mut output,
         )
@@ -272,9 +271,17 @@ fn dpapi_protect(data: &[u8]) -> Result<Vec<u8>> {
 
         let slice = std::slice::from_raw_parts(output.pbData, output.cbData as usize);
         let result = slice.to_vec();
-        windows::Win32::System::Memory::LocalFree(
-            windows::Win32::Foundation::HLOCAL(output.pbData as isize),
-        );
+        // Free the DPAPI-allocated output buffer using HeapFree via LocalFree equivalent
+        // Free the buffer allocated by DPAPI using the process heap
+        if !output.pbData.is_null() {
+            let heap = windows::Win32::System::Memory::GetProcessHeap()
+                .expect("GetProcessHeap failed");
+            let _ = windows::Win32::System::Memory::HeapFree(
+                heap,
+                windows::Win32::System::Memory::HEAP_FLAGS(0),
+                Some(output.pbData as *const _),
+            );
+        }
         Ok(result)
     }
 }
@@ -303,11 +310,17 @@ fn dpapi_unprotect(data: &[u8]) -> Result<Vec<u8>> {
         )
         .map_err(|e| anyhow::anyhow!("DPAPI unprotect failed: {}", e))?;
 
-        let slice  = std::slice::from_raw_parts(output.pbData, output.cbData as usize);
+        let slice = std::slice::from_raw_parts(output.pbData, output.cbData as usize);
         let result = slice.to_vec();
-        windows::Win32::System::Memory::LocalFree(
-            windows::Win32::Foundation::HLOCAL(output.pbData as isize),
-        );
+        if !output.pbData.is_null() {
+            let heap = windows::Win32::System::Memory::GetProcessHeap()
+                .expect("GetProcessHeap failed");
+            let _ = windows::Win32::System::Memory::HeapFree(
+                heap,
+                windows::Win32::System::Memory::HEAP_FLAGS(0),
+                Some(output.pbData as *const _),
+            );
+        }
         Ok(result)
     }
 }
