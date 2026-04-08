@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CyberFence Endpoint Protection Agent v0.1.0
+  Product_wixl.wxs — wixl-compatible MSI (msitools 0.106, Linux/CI)
+
+  Bundles:
+    - cf-agent.exe (CyberFence monitoring + scanning agent)
+    - CyberFence Engine (ClamAV 1.4.4 LTS, white-labeled)
+      clamscan.exe, clamd.exe, freshclam.exe, all DLLs
+    - config.toml, scripts, README
+
+  ProductCode:  {4066040C-E6D0-5245-BD98-4420FB83B3C7}
+  UpgradeCode:  {61C3AB38-E735-5962-B342-EB616B1B2EE2}
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Product
+    Id="{4066040C-E6D0-5245-BD98-4420FB83B3C7}"
+    Name="CyberFence Endpoint Protection Agent"
+    Language="1033"
+    Version="0.1.0.0"
+    Manufacturer="Perez Technology Group, LLC"
+    UpgradeCode="{61C3AB38-E735-5962-B342-EB616B1B2EE2}">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="CyberFence Endpoint Protection Agent v0.1.0 — includes CyberFence Engine (ClamAV 1.4.4 LTS)"
+      Manufacturer="Perez Technology Group, LLC" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of CyberFence Endpoint Protection is already installed."
+      AllowSameVersionUpgrades="no" />
+
+    <!-- ── Directory tree ──────────────────────────────────────────────── -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="CompanyDir" Name="Perez Technology Group">
+          <Directory Id="INSTALLDIR" Name="CyberFence Endpoint">
+
+            <!-- Agent binary -->
+            <Directory Id="BinDir"     Name="bin" />
+            <!-- Agent config -->
+            <Directory Id="ConfigDir"  Name="config" />
+            <!-- Log files (created at runtime) -->
+            <Directory Id="LogsDir"    Name="logs" />
+            <!-- Helper scripts -->
+            <Directory Id="ScriptsDir" Name="scripts" />
+            <!-- CyberFence Engine (ClamAV runtime, white-labeled) -->
+            <Directory Id="EngineDir"  Name="engine">
+              <!-- conf_examples subdir -->
+              <Directory Id="EngineConfExamplesDir" Name="conf_examples" />
+              <!-- Virus definitions land here after freshclam runs -->
+              <Directory Id="EngineDbDir" Name="db" />
+            </Directory>
+
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         AGENT COMPONENTS
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── cf-agent.exe + Windows Service ─────────────────────────────── -->
+    <DirectoryRef Id="BinDir">
+      <Component Id="CompAgent" Guid="{B57ABAD3-9323-5AC0-9F92-95819DCF5043}" Win64="yes">
+        <File Id="CfAgentExe"
+              Name="cf-agent.exe"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/cf-agent.exe"
+              KeyPath="yes" />
+
+        <ServiceInstall
+          Id="CyberFenceService"
+          Name="CyberFenceAgent"
+          DisplayName="CyberFence Endpoint Protection Agent"
+          Description="Real-time file monitoring and malware scanning for CyberFence Endpoint Protection."
+          Type="ownProcess"
+          Start="auto"
+          ErrorControl="normal"
+          Account="LocalSystem" />
+
+        <ServiceControl
+          Id="StartCyberFenceService"
+          Name="CyberFenceAgent"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
+
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="InstallDir"
+          Type="string"
+          Value="[INSTALLDIR]" />
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="Version"
+          Type="string"
+          Value="0.1.0" />
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="EngineVersion"
+          Type="string"
+          Value="ClamAV 1.4.4 LTS" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── config.toml ─────────────────────────────────────────────────── -->
+    <DirectoryRef Id="ConfigDir">
+      <Component Id="CompConfig" Guid="{393BBA5E-A34A-51A6-BFAB-9441BAD6B4D2}" Win64="yes">
+        <File Id="ConfigToml"
+              Name="config.toml"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/config.toml"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── Helper scripts ──────────────────────────────────────────────── -->
+    <DirectoryRef Id="ScriptsDir">
+      <Component Id="CompInstallBat" Guid="{8C57A414-5AE7-561B-A6D8-45A04180D84D}" Win64="yes">
+        <File Id="InstallBat"
+              Name="install.bat"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/install.bat"
+              KeyPath="yes" />
+      </Component>
+      <Component Id="CompUninstallBat" Guid="{AC7947ED-7E34-53E0-9D2D-C9A86CEE9221}" Win64="yes">
+        <File Id="UninstallBat"
+              Name="uninstall.bat"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/uninstall.bat"
+              KeyPath="yes" />
+      </Component>
+      <Component Id="CompTestEicar" Guid="{583E6901-EC51-50DF-AFFC-05A4082C378D}" Win64="yes">
+        <File Id="TestEicarBat"
+              Name="test-eicar.bat"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/test-eicar.bat"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── README ──────────────────────────────────────────────────────── -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="CompReadme" Guid="{78A183AD-F6DA-569A-9D1D-B18D74A59AE4}" Win64="yes">
+        <File Id="ReadmeTxt"
+              Name="README.txt"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/README.txt"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CYBERFENCE ENGINE COMPONENTS (ClamAV 1.4.4 LTS, white-labeled)
+         All binaries, DLLs, and configs land in engine\ subdirectory.
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <DirectoryRef Id="EngineDir">
+      <Component Id="Comp_Clam_ClamAV_README_md" Guid="{92070DC6-7083-51F7-8F21-6CFF6D2B22E1}" Win64="yes">
+        <File Id="Clam_ClamAV_README_md" Name="ClamAV-README.md" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/ClamAV-README.md" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamconf_exe" Guid="{C01C7713-FE92-5B1E-93B6-1E233FFC1F71}" Win64="yes">
+        <File Id="Clam_clamconf_exe" Name="clamconf.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamconf.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamd_exe" Guid="{29974F2F-7FA9-5BB7-B8EF-2768B92B6AA8}" Win64="yes">
+        <File Id="Clam_clamd_exe" Name="clamd.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamd.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamdscan_exe" Guid="{6A3622E6-5433-5BB2-BF9A-6FB0573B337F}" Win64="yes">
+        <File Id="Clam_clamdscan_exe" Name="clamdscan.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamdscan.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamscan_exe" Guid="{40500CB7-4837-5DA2-B552-730DB89E28C1}" Win64="yes">
+        <File Id="Clam_clamscan_exe" Name="clamscan.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamscan.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_concrt140_dll" Guid="{544849CE-8C88-5C24-8993-45D4965E9EB0}" Win64="yes">
+        <File Id="Clam_concrt140_dll" Name="concrt140.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/concrt140.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_freshclam_conf" Guid="{7403512E-FBCA-5DA8-891A-ADB9DE91A03D}" Win64="yes">
+        <File Id="Clam_freshclam_conf" Name="freshclam.conf" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/freshclam.conf" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_freshclam_exe" Guid="{FA76FCDF-3871-533F-B48D-1148033D9589}" Win64="yes">
+        <File Id="Clam_freshclam_exe" Name="freshclam.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/freshclam.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_json_c_dll" Guid="{DA0A3425-3242-5962-AB43-F011BCE24F2C}" Win64="yes">
+        <File Id="Clam_json_c_dll" Name="json-c.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/json-c.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libbz2_dll" Guid="{0DECA85B-AD29-54FC-8E21-562AFBA5512F}" Win64="yes">
+        <File Id="Clam_libbz2_dll" Name="libbz2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libbz2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclamav_dll" Guid="{ED989FA2-5335-5AFC-B40B-D5CAB34CF6D4}" Win64="yes">
+        <File Id="Clam_libclamav_dll" Name="libclamav.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclamav.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclammspack_dll" Guid="{7F2936C9-C468-5F8A-A28E-F83CFC258C67}" Win64="yes">
+        <File Id="Clam_libclammspack_dll" Name="libclammspack.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclammspack.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclamunrar_dll" Guid="{6D69E596-9015-5B5C-A8F0-4ED1A4907B0C}" Win64="yes">
+        <File Id="Clam_libclamunrar_dll" Name="libclamunrar.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclamunrar.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclamunrar_iface_dll" Guid="{BFB16047-1F65-5AA9-A565-2B05F706E990}" Win64="yes">
+        <File Id="Clam_libclamunrar_iface_dll" Name="libclamunrar_iface.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclamunrar_iface.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libcrypto_3_x64_dll" Guid="{FE9EF9F7-686C-5138-9759-A02AA58CB132}" Win64="yes">
+        <File Id="Clam_libcrypto_3_x64_dll" Name="libcrypto-3-x64.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libcrypto-3-x64.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libcurl_dll" Guid="{330E34B8-943F-508F-83BB-F7C3ACB31E54}" Win64="yes">
+        <File Id="Clam_libcurl_dll" Name="libcurl.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libcurl.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libfreshclam_dll" Guid="{BDCD3A99-94FE-58F6-99F0-3FF57A915749}" Win64="yes">
+        <File Id="Clam_libfreshclam_dll" Name="libfreshclam.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libfreshclam.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libssh2_dll" Guid="{F5100CC7-8D7E-5CC1-A792-4BCAD052A751}" Win64="yes">
+        <File Id="Clam_libssh2_dll" Name="libssh2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libssh2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libssl_3_x64_dll" Guid="{DA7E3530-8AA2-5905-856A-41BB5A0B6953}" Win64="yes">
+        <File Id="Clam_libssl_3_x64_dll" Name="libssl-3-x64.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libssl-3-x64.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libxml2_dll" Guid="{A54E258A-FAC0-5A67-B8B8-1A70511E135F}" Win64="yes">
+        <File Id="Clam_libxml2_dll" Name="libxml2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libxml2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_dll" Guid="{5641C896-41FF-5BE8-AA7E-EE8B922A15BE}" Win64="yes">
+        <File Id="Clam_msvcp140_dll" Name="msvcp140.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_1_dll" Guid="{13DAE720-5974-5C03-B743-F7443AF33CEE}" Win64="yes">
+        <File Id="Clam_msvcp140_1_dll" Name="msvcp140_1.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_1.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_2_dll" Guid="{F7F10DC0-37AD-5C95-862B-A077F2336AC7}" Win64="yes">
+        <File Id="Clam_msvcp140_2_dll" Name="msvcp140_2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_atomic_wait_dll" Guid="{E6F2E6C7-D4CF-5DB9-9D16-DEBCED219DE6}" Win64="yes">
+        <File Id="Clam_msvcp140_atomic_wait_dll" Name="msvcp140_atomic_wait.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_atomic_wait.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_codecvt_ids_dll" Guid="{7D2B1F3D-E2CF-5EA4-9FF4-0EA8165B3DF0}" Win64="yes">
+        <File Id="Clam_msvcp140_codecvt_ids_dll" Name="msvcp140_codecvt_ids.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_codecvt_ids.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_nghttp2_dll" Guid="{3976D150-D951-52BB-8925-41EBB87F33D9}" Win64="yes">
+        <File Id="Clam_nghttp2_dll" Name="nghttp2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/nghttp2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_pcre2_8_dll" Guid="{D7856426-2B67-5213-B106-3EBCB2CB171A}" Win64="yes">
+        <File Id="Clam_pcre2_8_dll" Name="pcre2-8.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/pcre2-8.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_pdcurses_dll" Guid="{3FC1F2FE-8061-5DB1-91DA-C9C3B4770265}" Win64="yes">
+        <File Id="Clam_pdcurses_dll" Name="pdcurses.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/pdcurses.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_pthreadVC3_dll" Guid="{39A2878E-501F-57AB-A088-AB4EC017A42C}" Win64="yes">
+        <File Id="Clam_pthreadVC3_dll" Name="pthreadVC3.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/pthreadVC3.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_update_definitions_bat" Guid="{D0D2518E-1090-57C2-91AB-CED59066E086}" Win64="yes">
+        <File Id="Clam_update_definitions_bat" Name="update-definitions.bat" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/update-definitions.bat" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_vcruntime140_dll" Guid="{D0EBE816-52A6-55BE-8007-4F7D9CFD31ED}" Win64="yes">
+        <File Id="Clam_vcruntime140_dll" Name="vcruntime140.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/vcruntime140.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_vcruntime140_1_dll" Guid="{93917D1C-585D-5CB4-86AC-2BF46CC386AB}" Win64="yes">
+        <File Id="Clam_vcruntime140_1_dll" Name="vcruntime140_1.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/vcruntime140_1.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- conf_examples subdir -->
+    <DirectoryRef Id="EngineConfExamplesDir">
+      <Component Id="Comp_Clam_conf_examples_clamd_conf_sample" Guid="{CEBEDF50-4659-5E7F-9D79-DB19D9EC7ABC}" Win64="yes">
+        <File Id="Clam_conf_examples_clamd_conf_sample" Name="clamd.conf.sample" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/conf_examples/clamd.conf.sample" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_conf_examples_freshclam_conf_sample" Guid="{9175BFEA-9CE7-5814-BFC8-17DF7AFC0B7C}" Win64="yes">
+        <File Id="Clam_conf_examples_freshclam_conf_sample" Name="freshclam.conf.sample" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/conf_examples/freshclam.conf.sample" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         FEATURES
+    ══════════════════════════════════════════════════════════════════ -->
+    <Feature Id="FeatureMain"
+             Title="CyberFence Endpoint Protection Agent"
+             Description="Core agent binary, configuration, and helper scripts."
+             Level="1">
+      <ComponentRef Id="CompAgent" />
+      <ComponentRef Id="CompConfig" />
+      <ComponentRef Id="CompInstallBat" />
+      <ComponentRef Id="CompUninstallBat" />
+      <ComponentRef Id="CompTestEicar" />
+      <ComponentRef Id="CompReadme" />
+    </Feature>
+
+    <Feature Id="FeatureEngine"
+             Title="CyberFence Engine (Scan Engine)"
+             Description="CyberFence Engine — the embedded malware scan engine (ClamAV 1.4.4 LTS). Required for scanning."
+             Level="1">
+      <ComponentRef Id="Comp_Clam_ClamAV_README_md" />
+      <ComponentRef Id="Comp_Clam_clamconf_exe" />
+      <ComponentRef Id="Comp_Clam_clamd_exe" />
+      <ComponentRef Id="Comp_Clam_clamdscan_exe" />
+      <ComponentRef Id="Comp_Clam_clamscan_exe" />
+      <ComponentRef Id="Comp_Clam_concrt140_dll" />
+      <ComponentRef Id="Comp_Clam_freshclam_conf" />
+      <ComponentRef Id="Comp_Clam_freshclam_exe" />
+      <ComponentRef Id="Comp_Clam_json_c_dll" />
+      <ComponentRef Id="Comp_Clam_libbz2_dll" />
+      <ComponentRef Id="Comp_Clam_libclamav_dll" />
+      <ComponentRef Id="Comp_Clam_libclammspack_dll" />
+      <ComponentRef Id="Comp_Clam_libclamunrar_dll" />
+      <ComponentRef Id="Comp_Clam_libclamunrar_iface_dll" />
+      <ComponentRef Id="Comp_Clam_libcrypto_3_x64_dll" />
+      <ComponentRef Id="Comp_Clam_libcurl_dll" />
+      <ComponentRef Id="Comp_Clam_libfreshclam_dll" />
+      <ComponentRef Id="Comp_Clam_libssh2_dll" />
+      <ComponentRef Id="Comp_Clam_libssl_3_x64_dll" />
+      <ComponentRef Id="Comp_Clam_libxml2_dll" />
+      <ComponentRef Id="Comp_Clam_msvcp140_dll" />
+      <ComponentRef Id="Comp_Clam_msvcp140_1_dll" />
+      <ComponentRef Id="Comp_Clam_msvcp140_2_dll" />
+      <ComponentRef Id="Comp_Clam_msvcp140_atomic_wait_dll" />
+      <ComponentRef Id="Comp_Clam_msvcp140_codecvt_ids_dll" />
+      <ComponentRef Id="Comp_Clam_nghttp2_dll" />
+      <ComponentRef Id="Comp_Clam_pcre2_8_dll" />
+      <ComponentRef Id="Comp_Clam_pdcurses_dll" />
+      <ComponentRef Id="Comp_Clam_pthreadVC3_dll" />
+      <ComponentRef Id="Comp_Clam_update_definitions_bat" />
+      <ComponentRef Id="Comp_Clam_vcruntime140_dll" />
+      <ComponentRef Id="Comp_Clam_vcruntime140_1_dll" />
+      <ComponentRef Id="Comp_Clam_conf_examples_clamd_conf_sample" />
+      <ComponentRef Id="Comp_Clam_conf_examples_freshclam_conf_sample" />
+    </Feature>
+
+  </Product>
+</Wix>
