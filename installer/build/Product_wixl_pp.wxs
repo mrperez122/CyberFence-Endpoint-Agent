@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CyberFence Endpoint Protection Agent v0.1.0
+  Product_wixl.wxs — wixl-compatible subset (msitools 0.106)
+  
+  Used by: build-wixl.sh (Linux / CI)
+  NOTE: Full WiX 3 installer with UI, VBScript CAs, and brand bitmaps
+        is in Product.wxs (requires WiX Toolset 3.11 on Windows).
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Product
+    Id="{4066040C-E6D0-5245-BD98-4420FB83B3C7}"
+    Name="CyberFence Endpoint Protection Agent"
+    Language="1033"
+    Version="0.1.0.0"
+    Manufacturer="Perez Technology Group, LLC"
+    UpgradeCode="{61C3AB38-E735-5962-B342-EB616B1B2EE2}">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="CyberFence Endpoint Protection Agent v0.1.0"
+      Manufacturer="Perez Technology Group, LLC" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of CyberFence Endpoint Protection is already installed."
+      AllowSameVersionUpgrades="no" />
+
+    <!-- ── Directory tree ──────────────────────────────────────────────── -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="CompanyDir" Name="Perez Technology Group">
+          <Directory Id="INSTALLDIR" Name="CyberFence Endpoint">
+            <Directory Id="BinDir"     Name="bin" />
+            <Directory Id="ConfigDir"  Name="config" />
+            <Directory Id="LogsDir"    Name="logs" />
+            <Directory Id="ScriptsDir" Name="scripts" />
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!-- ── cf-agent.exe + Windows Service ─────────────────────────────── -->
+    <DirectoryRef Id="BinDir">
+      <Component Id="CompAgent" Guid="{B57ABAD3-9323-5AC0-9F92-95819DCF5043}" Win64="yes">
+        <File Id="CfAgentExe"
+              Name="cf-agent.exe"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/cf-agent.exe"
+              KeyPath="yes" />
+
+        <ServiceInstall
+          Id="CyberFenceService"
+          Name="CyberFenceAgent"
+          DisplayName="CyberFence Endpoint Protection Agent"
+          Description="Real-time file monitoring and malware scanning for CyberFence Endpoint Protection."
+          Type="ownProcess"
+          Start="auto"
+          ErrorControl="normal"
+          Account="LocalSystem" />
+
+        <ServiceControl
+          Id="StartCyberFenceService"
+          Name="CyberFenceAgent"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
+
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="InstallDir"
+          Type="string"
+          Value="[INSTALLDIR]" />
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="Version"
+          Type="string"
+          Value="0.1.0" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── config.toml ─────────────────────────────────────────────────── -->
+    <DirectoryRef Id="ConfigDir">
+      <Component Id="CompConfig" Guid="{393BBA5E-A34A-51A6-BFAB-9441BAD6B4D2}" Win64="yes">
+        <File Id="ConfigToml"
+              Name="config.toml"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/config.toml"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── Helper scripts ──────────────────────────────────────────────── -->
+    <DirectoryRef Id="ScriptsDir">
+      <Component Id="CompInstallBat" Guid="{8C57A414-5AE7-561B-A6D8-45A04180D84D}" Win64="yes">
+        <File Id="InstallBat"
+              Name="install.bat"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/install.bat"
+              KeyPath="yes" />
+      </Component>
+
+      <Component Id="CompUninstallBat" Guid="{AC7947ED-7E34-53E0-9D2D-C9A86CEE9221}" Win64="yes">
+        <File Id="UninstallBat"
+              Name="uninstall.bat"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/uninstall.bat"
+              KeyPath="yes" />
+      </Component>
+
+      <Component Id="CompTestEicar" Guid="{583E6901-EC51-50DF-AFFC-05A4082C378D}" Win64="yes">
+        <File Id="TestEicarBat"
+              Name="test-eicar.bat"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/test-eicar.bat"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── README ──────────────────────────────────────────────────────── -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="CompReadme" Guid="{78A183AD-F6DA-569A-9D1D-B18D74A59AE4}" Win64="yes">
+        <File Id="ReadmeTxt"
+              Name="README.txt"
+              Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/README.txt"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── Feature ─────────────────────────────────────────────────────── -->
+    <Feature Id="FeatureMain"
+             Title="CyberFence Endpoint Protection Agent"
+             Description="Core agent binary, configuration, and helper scripts."
+             Level="1">
+      <ComponentRef Id="CompAgent" />
+      <ComponentRef Id="CompConfig" />
+      <ComponentRef Id="CompInstallBat" />
+      <ComponentRef Id="CompUninstallBat" />
+      <ComponentRef Id="CompTestEicar" />
+      <ComponentRef Id="CompReadme" />
+    </Feature>
+
+  </Product>
+</Wix>

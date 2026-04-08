@@ -32,3 +32,8 @@ definitions/*.cld
 *.pdb
 *.msi
 *.pkg
+
+# Track distributable artifacts in dist/ (override *.exe / *.msi rules)
+!dist/**/*.exe
+!dist/**/*.msi
+!dist/*.msi

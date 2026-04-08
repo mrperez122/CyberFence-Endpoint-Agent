@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CyberFence Endpoint Protection Agent v0.1.0
+  WiX 3.x / wixl-compatible installer definition
+  Product.wxs — main installer manifest
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <Product
+    Id="{4066040C-E6D0-5245-BD98-4420FB83B3C7}"
+    Name="CyberFence Endpoint Protection Agent"
+    Language="1033"
+    Version="0.1.0.0"
+    Manufacturer="Perez Technology Group, LLC"
+    UpgradeCode="{61C3AB38-E735-5962-B342-EB616B1B2EE2}">
+
+    <!-- ── Package metadata ─────────────────────────────────────────────── -->
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="CyberFence Endpoint Protection Agent — real-time file monitoring and malware scanning"
+      Comments="Copyright © 2026 Perez Technology Group, LLC. All rights reserved."
+      Manufacturer="Perez Technology Group, LLC" />
+
+    <!-- ── Media / cabinet ──────────────────────────────────────────────── -->
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- ── Upgrade logic (major upgrades, same UpgradeCode) ─────────────── -->
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of CyberFence Endpoint Protection is already installed. Please uninstall it first."
+      AllowSameVersionUpgrades="no"
+      Schedule="afterInstallInitialize" />
+
+    <!-- ── Icon for Add/Remove Programs ─────────────────────────────────── -->
+    <Icon Id="CyberFenceIcon" SourceFile="$(var.InstallerResourcesDir)\cyberfence.ico" />
+
+    <!-- ── Add / Remove Programs entry ─────────────────────────────────── -->
+    <Property Id="ARPPRODUCTICON"    Value="CyberFenceIcon" />
+    <Property Id="ARPHELPLINK"       Value="https://www.cyberfenceplatform.com" />
+    <Property Id="ARPURLINFOABOUT"   Value="https://www.cyberfenceplatform.com" />
+    <Property Id="ARPURLUPDATEINFO"  Value="https://www.cyberfenceplatform.com/downloads" />
+    <Property Id="ARPNOMODIFY"       Value="1" />
+
+    <!-- ── Default install directory ───────────────────────────────────── -->
+    <Property Id="INSTALLDIR" Secure="yes">
+      <RegistrySearch Id="PreviousInstallDir"
+        Root="HKLM"
+        Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+        Name="InstallDir"
+        Type="raw" />
+    </Property>
+
+    <!-- ── ClamAV detection property (set by CA) ──────────────────────── -->
+    <Property Id="CLAMAV_FOUND" Value="0" />
+    <Property Id="CLAMAV_PATH"  Value="" />
+
+    <!-- ── Directory tree ────────────────────────────────────────────────  -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+
+      <!-- C:\Program Files\CyberFence -->
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="CompanyDir" Name="Perez Technology Group">
+          <Directory Id="INSTALLDIR" Name="CyberFence Endpoint">
+
+            <!-- Main application directory -->
+            <Directory Id="BinDir"    Name="bin" />
+            <Directory Id="ConfigDir" Name="config" />
+            <Directory Id="LogsDir"   Name="logs" />
+            <Directory Id="ScriptsDir" Name="scripts" />
+
+          </Directory>
+        </Directory>
+      </Directory>
+
+      <!-- Start Menu -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="CyberFence" />
+      </Directory>
+
+    </Directory>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         COMPONENTS
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── cf-agent.exe ─────────────────────────────────────────────────── -->
+    <DirectoryRef Id="BinDir">
+      <Component Id="CompAgent" Guid="{B57ABAD3-9323-5AC0-9F92-95819DCF5043}" Win64="yes">
+        <File Id="CfAgentExe"
+              Name="cf-agent.exe"
+              Source="$(var.DistDir)\cf-agent.exe"
+              KeyPath="yes"
+              Checksum="yes" />
+
+        <!-- Windows Service registration -->
+        <ServiceInstall
+          Id="CyberFenceService"
+          Name="CyberFenceAgent"
+          DisplayName="CyberFence Endpoint Protection Agent"
+          Description="Real-time file monitoring and malware scanning for CyberFence Endpoint Protection."
+          Type="ownProcess"
+          Start="auto"
+          ErrorControl="normal"
+          Interactive="no"
+          Account="LocalSystem" />
+
+        <!-- Start on install, stop/delete on uninstall -->
+        <ServiceControl
+          Id="StartCyberFenceService"
+          Name="CyberFenceAgent"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
+
+        <!-- Registry: record install path -->
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="InstallDir"
+          Type="string"
+          Value="[INSTALLDIR]" />
+        <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="Version"
+          Type="string"
+          Value="0.1.0" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── config.toml ───────────────────────────────────────────────────── -->
+    <DirectoryRef Id="ConfigDir">
+      <Component Id="CompConfig" Guid="{393BBA5E-A34A-51A6-BFAB-9441BAD6B4D2}" Win64="yes">
+        <!-- NeverOverwrite="yes" preserves user edits on upgrade -->
+        <File Id="ConfigToml"
+              Name="config.toml"
+              Source="$(var.DistDir)\config.toml"
+              KeyPath="yes"
+              NeverOverwrite="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── scripts: install.bat / uninstall.bat / test-eicar.bat ─────────── -->
+    <DirectoryRef Id="ScriptsDir">
+      <Component Id="CompInstallBat" Guid="{8C57A414-5AE7-561B-A6D8-45A04180D84D}" Win64="yes">
+        <File Id="InstallBat"
+              Name="install.bat"
+              Source="$(var.DistDir)\install.bat"
+              KeyPath="yes" />
+      </Component>
+
+      <Component Id="CompUninstallBat" Guid="{AC7947ED-7E34-53E0-9D2D-C9A86CEE9221}" Win64="yes">
+        <File Id="UninstallBat"
+              Name="uninstall.bat"
+              Source="$(var.DistDir)\uninstall.bat"
+              KeyPath="yes" />
+      </Component>
+
+      <Component Id="CompTestEicar" Guid="{583E6901-EC51-50DF-AFFC-05A4082C378D}" Win64="yes">
+        <File Id="TestEicarBat"
+              Name="test-eicar.bat"
+              Source="$(var.DistDir)\test-eicar.bat"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── README.txt ────────────────────────────────────────────────────── -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="CompReadme" Guid="{78A183AD-F6DA-569A-9D1D-B18D74A59AE4}" Win64="yes">
+        <File Id="ReadmeTxt"
+              Name="README.txt"
+              Source="$(var.DistDir)\README.txt"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ── Start Menu shortcuts ──────────────────────────────────────────── -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="CompStartMenu" Guid="{BFFB7AF4-F405-53E6-860C-00A782728082}">
+        <Shortcut Id="StartMenuReadme"
+                  Name="CyberFence — README"
+                  Description="Open CyberFence Endpoint README"
+                  Target="[INSTALLDIR]README.txt"
+                  WorkingDirectory="INSTALLDIR" />
+        <Shortcut Id="StartMenuUninstall"
+                  Name="Uninstall CyberFence Endpoint"
+                  Description="Remove CyberFence Endpoint Protection Agent"
+                  Target="[SystemFolder]msiexec.exe"
+                  Arguments="/x {4066040C-E6D0-5245-BD98-4420FB83B3C7}"
+                  WorkingDirectory="SystemFolder" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+                       Name="StartMenuInstalled"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         FEATURES
+    ══════════════════════════════════════════════════════════════════ -->
+    <Feature Id="FeatureMain"
+             Title="CyberFence Endpoint Protection Agent"
+             Description="Installs the CyberFence background monitoring service, scan engine adapter, and default configuration."
+             Level="1"
+             Absent="disallow"
+             AllowAdvertise="no"
+             Display="expand"
+             InstallDefault="local">
+
+      <ComponentRef Id="CompAgent" />
+      <ComponentRef Id="CompConfig" />
+      <ComponentRef Id="CompInstallBat" />
+      <ComponentRef Id="CompUninstallBat" />
+      <ComponentRef Id="CompTestEicar" />
+      <ComponentRef Id="CompReadme" />
+      <ComponentRef Id="CompStartMenu" />
+
+    </Feature>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CUSTOM ACTIONS — ClamAV detection
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!--
+      CA_CheckClamAV: VBScript that walks PATH looking for clamscan.exe.
+      Sets CLAMAV_FOUND=1 and CLAMAV_PATH if found.
+    -->
+    <Binary Id="CheckClamScript" SourceFile="$(var.InstallerResourcesDir)\check_clamav.vbs" />
+
+    <CustomAction Id="CA_CheckClamAV"
+                  BinaryKey="CheckClamScript"
+                  VBScriptCall=""
+                  Execute="immediate"
+                  Return="ignore" />
+
+    <!--
+      CA_WarnNoClamAV: VBScript popup — only fires if CLAMAV_FOUND=0.
+      Non-blocking: user can continue install without ClamAV.
+    -->
+    <Binary Id="WarnClamScript" SourceFile="$(var.InstallerResourcesDir)\warn_no_clamav.vbs" />
+
+    <CustomAction Id="CA_WarnNoClamAV"
+                  BinaryKey="WarnClamScript"
+                  VBScriptCall=""
+                  Execute="immediate"
+                  Return="ignore" />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         INSTALL SEQUENCE
+    ══════════════════════════════════════════════════════════════════ -->
+    <InstallUISequence>
+      <!-- Run ClamAV check after FindRelatedProducts, before user sees UI -->
+      <Custom Action="CA_CheckClamAV"  After="FindRelatedProducts">NOT Installed</Custom>
+      <!-- Show warning before InstallWelcomeDlg if ClamAV not found -->
+      <Custom Action="CA_WarnNoClamAV" After="CA_CheckClamAV">NOT Installed AND CLAMAV_FOUND = "0"</Custom>
+    </InstallUISequence>
+
+    <InstallExecuteSequence>
+      <Custom Action="CA_CheckClamAV" After="FindRelatedProducts">NOT Installed</Custom>
+    </InstallExecuteSequence>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         UI — WixUI_InstallDir dialog chain
+    ══════════════════════════════════════════════════════════════════ -->
+    <UIRef Id="WixUI_InstallDir" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <!-- Override the default WelcomeDlg banner + dialog bitmaps with brand assets -->
+    <WixVariable Id="WixUIBannerBmp"   Value="$(var.InstallerResourcesDir)\banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp"   Value="$(var.InstallerResourcesDir)\dialog.bmp" />
+    <WixVariable Id="WixUILicenseRtf"  Value="$(var.InstallerResourcesDir)\License.rtf" />
+
+    <!-- Property required by WixUI_InstallDir -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+
+  </Product>
+</Wix>
