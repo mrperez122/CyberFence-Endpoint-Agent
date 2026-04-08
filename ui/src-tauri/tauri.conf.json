@@ -3,49 +3,68 @@
   "productName": "CyberFence Endpoint",
   "version": "0.1.0",
   "identifier": "com.cyberfence.endpoint",
+
   "build": {
-    "frontendDist": "../build",
-    "devUrl":       "http://localhost:1420",
+    "frontendDist":       "../build",
+    "devUrl":             "http://localhost:1420",
     "beforeDevCommand":   "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
+
   "app": {
     "withGlobalTauri": true,
+
     "trayIcon": {
-      "id":       "cf-tray",
-      "iconPath": "icons/tray-icon.png",
-      "iconAsTemplate": true,
-      "tooltip": "CyberFence Endpoint Protection"
+      "id":             "cf-tray",
+      "iconPath":       "icons/tray-icon.png",
+      "iconAsTemplate": false,
+      "tooltip":        "CyberFence Endpoint Protection"
     },
+
     "windows": [
       {
-        "label":            "main",
-        "title":            "CyberFence Endpoint",
-        "width":            900,
-        "height":           620,
-        "minWidth":         800,
-        "minHeight":        560,
-        "resizable":        true,
-        "visible":          false,
-        "decorations":      true,
-        "transparent":      false,
-        "center":           true,
-        "url":              "/"
+        "label":        "main",
+        "title":        "CyberFence Endpoint Protection",
+        "width":        1000,
+        "height":       660,
+        "minWidth":     860,
+        "minHeight":    580,
+        "resizable":    true,
+        "visible":      true,
+        "decorations":  true,
+        "transparent":  false,
+        "center":       true,
+        "url":          "/"
       }
     ],
+
     "security": {
       "csp": null
     }
   },
+
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["msi", "nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com"
+    },
+    "shortDescription": "CyberFence Endpoint Protection — real-time malware scanning",
+    "longDescription":  "CyberFence Endpoint Protection Agent monitors your device in real-time, detecting and quarantining threats powered by the CyberFence Engine.",
+    "copyright": "Copyright © 2026 Perez Technology Group, LLC",
+    "category": "Security",
+    "publisher": "Perez Technology Group, LLC",
+    "homepage": "https://www.cyberfenceplatform.com",
+    "resources": [],
+    "externalBin": []
   }
 }

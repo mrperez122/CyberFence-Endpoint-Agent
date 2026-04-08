@@ -9,7 +9,7 @@
 //! Right-click: context menu → Open Dashboard | Quick Scan | Quit
 
 use tauri::{
-    App, Manager,
+    App, Emitter, Manager,
     menu::{Menu, MenuItem},
     tray::{TrayIconBuilder, TrayIconEvent},
 };
