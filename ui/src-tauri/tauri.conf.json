@@ -1,30 +1,26 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "CyberFence Endpoint",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "identifier": "com.cyberfence.endpoint",
-
   "build": {
-    "frontendDist": "../build",
+    "frontendDist": "ui/build",
     "devUrl": "http://localhost:1420",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
-
   "app": {
     "withGlobalTauri": true,
-
     "trayIcon": {
       "id": "cf-tray",
       "iconPath": "icons/tray-icon.png",
       "iconAsTemplate": false,
       "tooltip": "CyberFence Endpoint Protection"
     },
-
     "windows": [
       {
         "label": "main",
-        "title": "CyberFence Endpoint Protection",
+        "title": "CyberFence Endpoint Protection v0.3.0",
         "width": 1080,
         "height": 700,
         "minWidth": 900,
@@ -37,15 +33,16 @@
         "url": "/"
       }
     ],
-
     "security": {
       "csp": null
     }
   },
-
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": [
+      "msi",
+      "nsis"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -61,9 +58,9 @@
         "type": "downloadBootstrapper"
       }
     },
-    "shortDescription": "CyberFence Endpoint Protection — real-time malware scanning",
+    "shortDescription": "CyberFence Endpoint Protection \u2014 real-time malware scanning",
     "longDescription": "CyberFence Endpoint Protection Agent monitors your device in real-time, detecting and quarantining threats powered by the CyberFence Engine.",
-    "copyright": "Copyright © 2026 Perez Technology Group, LLC",
+    "copyright": "Copyright \u00a9 2026 Perez Technology Group, LLC",
     "category": "Security",
     "publisher": "Perez Technology Group, LLC",
     "homepage": "https://www.cyberfenceplatform.com",

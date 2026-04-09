@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CyberFence Endpoint Protection Agent v0.1.0 -->
+<!-- Product_wixl.wxs — Full production installer with CyberFence Engine + Dashboard UI -->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Product
+    Id="{7B4C8D2E-9E1F-4A67-C234-56EF78901234}"
+    Name="CyberFence Endpoint Protection"
+    Language="1033"
+    Version="0.3.0.0"
+    Manufacturer="Perez Technology Group, LLC"
+    UpgradeCode="{61C3AB38-E735-5962-B342-EB616B1B2EE2}">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="CyberFence Endpoint Protection v0.1.0 — Real-time malware protection with CyberFence Engine"
+      Manufacturer="Perez Technology Group, LLC" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of CyberFence Endpoint Protection is already installed."
+      AllowSameVersionUpgrades="no" />
+
+    <!-- Directory tree -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="CompanyDir" Name="Perez Technology Group">
+          <Directory Id="INSTALLDIR" Name="CyberFence Endpoint">
+            <Directory Id="BinDir"    Name="bin" />
+            <Directory Id="ConfigDir" Name="config" />
+            <Directory Id="LogsDir"   Name="logs" />
+            <Directory Id="ScriptsDir" Name="scripts" />
+            <Directory Id="EngineDir"  Name="engine">
+              <Directory Id="EngineConfExamplesDir" Name="conf_examples" />
+              <Directory Id="EngineDbDir" Name="db" />
+            </Directory>
+            <!-- Dashboard UI -->
+            <Directory Id="UiAppDir" Name="ui">
+              <Directory Id="UiBuildDir" Name="build">
+                <Directory Id="UiDir__app" Name="_app">
+                  <Directory Id="UiDir__app_immutable" Name="immutable">
+                    <Directory Id="UiDir__app_immutable_assets" Name="assets" />
+                    <Directory Id="UiDir__app_immutable_chunks" Name="chunks" />
+                    <Directory Id="UiDir__app_immutable_entry" Name="entry" />
+                    <Directory Id="UiDir__app_immutable_nodes" Name="nodes" />
+                  </Directory>
+                </Directory>
+                <Directory Id="UiDir_assets" Name="assets" />
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="AppMenuFolder" Name="CyberFence" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <!-- Agent binary + service -->
+    <DirectoryRef Id="BinDir">
+      <Component Id="CompAgent" Guid="{B57ABAD3-9323-5AC0-9F92-95819DCF5043}" Win64="yes">
+        <File Id="CfAgentExe" Name="cf-agent.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/cf-agent.exe" KeyPath="yes" />
+        <ServiceInstall Id="CyberFenceService" Name="CyberFenceAgent"
+          DisplayName="CyberFence Endpoint Protection Agent"
+          Description="Real-time file monitoring and malware scanning."
+          Type="ownProcess" Start="auto" ErrorControl="normal" Account="LocalSystem" />
+        <ServiceControl Id="SvcControl" Name="CyberFenceAgent"
+          Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint" Name="InstallDir" Type="string" Value="[INSTALLDIR]" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint" Name="Version" Type="string" Value="0.3.0" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint" Name="EngineVersion" Type="string" Value="ClamAV 1.4.4 LTS" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Dashboard UI (Tauri/WebView2 app) -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="CompUI" Guid="{A1B2C3D4-0001-4000-9000-AABB00000001}" Win64="yes">
+        <File Id="CyberFenceExe" Name="CyberFence.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/CyberFence.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="CompReadme" Guid="{78A183AD-F6DA-569A-9D1D-B18D74A59AE4}" Win64="yes">
+        <File Id="ReadmeTxt" Name="README.txt" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/README.txt" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ConfigDir">
+      <Component Id="CompConfig" Guid="{393BBA5E-A34A-51A6-BFAB-9441BAD6B4D2}" Win64="yes">
+        <File Id="ConfigToml" Name="config.toml" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/config.toml" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ScriptsDir">
+      <Component Id="CompInstallBat" Guid="{8C57A414-5AE7-561B-A6D8-45A04180D84D}" Win64="yes">
+        <File Id="InstallBat" Name="install.bat" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/install.bat" KeyPath="yes" />
+      </Component>
+      <Component Id="CompUninstallBat" Guid="{AC7947ED-7E34-53E0-9D2D-C9A86CEE9221}" Win64="yes">
+        <File Id="UninstallBat" Name="uninstall.bat" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/uninstall.bat" KeyPath="yes" />
+      </Component>
+      <Component Id="CompTestEicar" Guid="{583E6901-EC51-50DF-AFFC-05A4082C378D}" Win64="yes">
+        <File Id="TestEicarBat" Name="test-eicar.bat" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/test-eicar.bat" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Start Menu shortcuts -->
+    <DirectoryRef Id="AppMenuFolder">
+      <Component Id="CompStartMenu" Guid="{BFFB7AF4-F405-53E6-860C-00A782728082}">
+        <Shortcut Id="StartMenuApp" Name="CyberFence Endpoint Protection"
+          Description="Open the CyberFence Endpoint Protection dashboard"
+          Target="[INSTALLDIR]CyberFence.exe" WorkingDirectory="INSTALLDIR" />
+        <Shortcut Id="StartMenuUninstall" Name="Uninstall CyberFence Endpoint"
+          Target="[SystemFolder]msiexec.exe"
+          Arguments="/x {7B4C8D2E-9E1F-4A67-C234-56EF78901234}" />
+        <RemoveFolder Id="CleanStartMenu" Directory="AppMenuFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="StartMenuInstalled" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Desktop shortcut -->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="CompDesktop" Guid="{CDEF1234-0002-4000-9000-AABB00000002}">
+        <Shortcut Id="DesktopApp" Name="CyberFence Endpoint"
+          Description="CyberFence Endpoint Protection"
+          Target="[INSTALLDIR]CyberFence.exe" WorkingDirectory="INSTALLDIR" />
+        <RegistryValue Root="HKCU" Key="SOFTWARE\Perez Technology Group\CyberFence Endpoint"
+          Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- CyberFence Engine (ClamAV 1.4.4 LTS) -->
+    <DirectoryRef Id="EngineDir">
+      <Component Id="Comp_Clam_ClamAV_README_md" Guid="{92070DC6-7083-51F7-8F21-6CFF6D2B22E1}" Win64="yes">
+        <File Id="Clam_ClamAV_README_md" Name="ClamAV-README.md" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/ClamAV-README.md" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamconf_exe" Guid="{C01C7713-FE92-5B1E-93B6-1E233FFC1F71}" Win64="yes">
+        <File Id="Clam_clamconf_exe" Name="clamconf.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamconf.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamd_exe" Guid="{29974F2F-7FA9-5BB7-B8EF-2768B92B6AA8}" Win64="yes">
+        <File Id="Clam_clamd_exe" Name="clamd.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamd.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamdscan_exe" Guid="{6A3622E6-5433-5BB2-BF9A-6FB0573B337F}" Win64="yes">
+        <File Id="Clam_clamdscan_exe" Name="clamdscan.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamdscan.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_clamscan_exe" Guid="{40500CB7-4837-5DA2-B552-730DB89E28C1}" Win64="yes">
+        <File Id="Clam_clamscan_exe" Name="clamscan.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/clamscan.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_freshclam_conf" Guid="{7403512E-FBCA-5DA8-891A-ADB9DE91A03D}" Win64="yes">
+        <File Id="Clam_freshclam_conf" Name="freshclam.conf" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/freshclam.conf" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_freshclam_exe" Guid="{FA76FCDF-3871-533F-B48D-1148033D9589}" Win64="yes">
+        <File Id="Clam_freshclam_exe" Name="freshclam.exe" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/freshclam.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_concrt140" Guid="{544849CE-8C88-5C24-8993-45D4965E9EB0}" Win64="yes">
+        <File Id="Clam_concrt140_dll" Name="concrt140.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/concrt140.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_json_c" Guid="{DA0A3425-3242-5962-AB43-F011BCE24F2C}" Win64="yes">
+        <File Id="Clam_json_c_dll" Name="json-c.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/json-c.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libbz2" Guid="{0DECA85B-AD29-54FC-8E21-562AFBA5512F}" Win64="yes">
+        <File Id="Clam_libbz2_dll" Name="libbz2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libbz2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclamav" Guid="{ED989FA2-5335-5AFC-B40B-D5CAB34CF6D4}" Win64="yes">
+        <File Id="Clam_libclamav_dll" Name="libclamav.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclamav.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclammspack" Guid="{7F2936C9-C468-5F8A-A28E-F83CFC258C67}" Win64="yes">
+        <File Id="Clam_libclammspack_dll" Name="libclammspack.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclammspack.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclamunrar" Guid="{6D69E596-9015-5B5C-A8F0-4ED1A4907B0C}" Win64="yes">
+        <File Id="Clam_libclamunrar_dll" Name="libclamunrar.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclamunrar.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libclamunrar_if" Guid="{BFB16047-1F65-5AA9-A565-2B05F706E990}" Win64="yes">
+        <File Id="Clam_libclamunrar_iface_dll" Name="libclamunrar_iface.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libclamunrar_iface.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libcrypto" Guid="{FE9EF9F7-686C-5138-9759-A02AA58CB132}" Win64="yes">
+        <File Id="Clam_libcrypto_3_x64_dll" Name="libcrypto-3-x64.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libcrypto-3-x64.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libcurl" Guid="{330E34B8-943F-508F-83BB-F7C3ACB31E54}" Win64="yes">
+        <File Id="Clam_libcurl_dll" Name="libcurl.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libcurl.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libfreshclam" Guid="{BDCD3A99-94FE-58F6-99F0-3FF57A915749}" Win64="yes">
+        <File Id="Clam_libfreshclam_dll" Name="libfreshclam.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libfreshclam.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libssh2" Guid="{F5100CC7-8D7E-5CC1-A792-4BCAD052A751}" Win64="yes">
+        <File Id="Clam_libssh2_dll" Name="libssh2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libssh2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libssl" Guid="{DA7E3530-8AA2-5905-856A-41BB5A0B6953}" Win64="yes">
+        <File Id="Clam_libssl_3_x64_dll" Name="libssl-3-x64.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libssl-3-x64.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_libxml2" Guid="{A54E258A-FAC0-5A67-B8B8-1A70511E135F}" Win64="yes">
+        <File Id="Clam_libxml2_dll" Name="libxml2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/libxml2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140" Guid="{5641C896-41FF-5BE8-AA7E-EE8B922A15BE}" Win64="yes">
+        <File Id="Clam_msvcp140_dll" Name="msvcp140.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_1" Guid="{13DAE720-5974-5C03-B743-F7443AF33CEE}" Win64="yes">
+        <File Id="Clam_msvcp140_1_dll" Name="msvcp140_1.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_1.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_2" Guid="{F7F10DC0-37AD-5C95-862B-A077F2336AC7}" Win64="yes">
+        <File Id="Clam_msvcp140_2_dll" Name="msvcp140_2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_aw" Guid="{E6F2E6C7-D4CF-5DB9-9D16-DEBCED219DE6}" Win64="yes">
+        <File Id="Clam_msvcp140_atomic_wait_dll" Name="msvcp140_atomic_wait.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_atomic_wait.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_msvcp140_cc" Guid="{7D2B1F3D-E2CF-5EA4-9FF4-0EA8165B3DF0}" Win64="yes">
+        <File Id="Clam_msvcp140_codecvt_ids_dll" Name="msvcp140_codecvt_ids.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/msvcp140_codecvt_ids.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_nghttp2" Guid="{3976D150-D951-52BB-8925-41EBB87F33D9}" Win64="yes">
+        <File Id="Clam_nghttp2_dll" Name="nghttp2.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/nghttp2.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_pcre2" Guid="{D7856426-2B67-5213-B106-3EBCB2CB171A}" Win64="yes">
+        <File Id="Clam_pcre2_8_dll" Name="pcre2-8.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/pcre2-8.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_pdcurses" Guid="{3FC1F2FE-8061-5DB1-91DA-C9C3B4770265}" Win64="yes">
+        <File Id="Clam_pdcurses_dll" Name="pdcurses.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/pdcurses.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_pthreadVC3" Guid="{39A2878E-501F-57AB-A088-AB4EC017A42C}" Win64="yes">
+        <File Id="Clam_pthreadVC3_dll" Name="pthreadVC3.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/pthreadVC3.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_update_defs" Guid="{D0D2518E-1090-57C2-91AB-CED59066E086}" Win64="yes">
+        <File Id="Clam_update_definitions_bat" Name="update-definitions.bat" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/update-definitions.bat" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_vcruntime140" Guid="{D0EBE816-52A6-55BE-8007-4F7D9CFD31ED}" Win64="yes">
+        <File Id="Clam_vcruntime140_dll" Name="vcruntime140.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/vcruntime140.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_vcruntime140_1" Guid="{93917D1C-585D-5CB4-86AC-2BF46CC386AB}" Win64="yes">
+        <File Id="Clam_vcruntime140_1_dll" Name="vcruntime140_1.dll" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/vcruntime140_1.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="EngineConfExamplesDir">
+      <Component Id="Comp_Clam_clamd_conf_sample" Guid="{CEBEDF50-4659-5E7F-9D79-DB19D9EC7ABC}" Win64="yes">
+        <File Id="Clam_clamd_conf_sample" Name="clamd.conf.sample" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/conf_examples/clamd.conf.sample" KeyPath="yes" />
+      </Component>
+      <Component Id="Comp_Clam_fc_conf_sample" Guid="{9175BFEA-9CE7-5814-BFC8-17DF7AFC0B7C}" Win64="yes">
+        <File Id="Clam_fc_conf_sample" Name="freshclam.conf.sample" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/engine/conf_examples/freshclam.conf.sample" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Dashboard frontend (SvelteKit static build) -->
+    <DirectoryRef Id="UiBuildDir">
+      <Component Id="Comp_UI_favicon_png" Guid="{715B16F8-EF2D-527E-955C-4EF623D2F753}" Win64="yes">
+        <File Id="UI_favicon_png" Name="favicon.png" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/favicon.png" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiBuildDir">
+      <Component Id="Comp_UI_history_html" Guid="{167DA3D2-E545-5D86-A402-523A43DE6305}" Win64="yes">
+        <File Id="UI_history_html" Name="history.html" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/history.html" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiBuildDir">
+      <Component Id="Comp_UI_index_html" Guid="{A980F8B0-C664-5A79-8391-C862BD688BE4}" Win64="yes">
+        <File Id="UI_index_html" Name="index.html" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/index.html" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiBuildDir">
+      <Component Id="Comp_UI_scan_html" Guid="{307D8D7E-AAB8-5E8F-BB55-8B91D8B6B8B9}" Win64="yes">
+        <File Id="UI_scan_html" Name="scan.html" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/scan.html" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiBuildDir">
+      <Component Id="Comp_UI_settings_html" Guid="{B53EA3E4-0443-5310-A373-96EFB060F26A}" Win64="yes">
+        <File Id="UI_settings_html" Name="settings.html" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/settings.html" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiBuildDir">
+      <Component Id="Comp_UI_threats_html" Guid="{1538FC1D-0755-5C34-BA09-52A775B88F75}" Win64="yes">
+        <File Id="UI_threats_html" Name="threats.html" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/threats.html" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app">
+      <Component Id="Comp_UI__app_env_js" Guid="{3E5EC185-A93B-5266-B6BA-AAB1102D9213}" Win64="yes">
+        <File Id="UI__app_env_js" Name="env.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/env.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app">
+      <Component Id="Comp_UI__app_version_json" Guid="{A5407304-16ED-591E-9EDD-4B82C6BA1704}" Win64="yes">
+        <File Id="UI__app_version_json" Name="version.json" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/version.json" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_assets">
+      <Component Id="Comp_UI__app_immutable_assets_0_g7tg64KV_css" Guid="{1028CD2A-B032-55A1-BF09-971CE5A7E1AD}" Win64="yes">
+        <File Id="UI__app_immutable_assets_0_g7tg64KV_css" Name="0.g7tg64KV.css" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/assets/0.g7tg64KV.css" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_assets">
+      <Component Id="Comp_UI__app_immutable_assets_2_9eYqSlsS_css" Guid="{DEE7B687-82E3-5564-9C75-09E2B3D6BAD1}" Win64="yes">
+        <File Id="UI__app_immutable_assets_2_9eYqSlsS_css" Name="2.9eYqSlsS.css" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/assets/2.9eYqSlsS.css" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_assets">
+      <Component Id="Comp_UI__app_immutable_assets_3_C6Hqje78_css" Guid="{10576A74-5CCE-5D44-8ABF-9C674E95FE71}" Win64="yes">
+        <File Id="UI__app_immutable_assets_3_C6Hqje78_css" Name="3.C6Hqje78.css" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/assets/3.C6Hqje78.css" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_assets">
+      <Component Id="Comp_UI__app_immutable_assets_4_CgGvBSr6_css" Guid="{C19772D6-8007-55FD-A3B9-03FF123D435D}" Win64="yes">
+        <File Id="UI__app_immutable_assets_4_CgGvBSr6_css" Name="4.CgGvBSr6.css" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/assets/4.CgGvBSr6.css" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_assets">
+      <Component Id="Comp_UI__app_immutable_assets_5_CrcOb_g3_css" Guid="{E1925DFB-FA2D-50A6-8FEA-1B166C6D9160}" Win64="yes">
+        <File Id="UI__app_immutable_assets_5_CrcOb_g3_css" Name="5.CrcOb_g3.css" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/assets/5.CrcOb_g3.css" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_assets">
+      <Component Id="Comp_UI__app_immutable_assets_6_Dx5z4boW_css" Guid="{840587C6-6EE2-55A6-87ED-365BF61DEDDB}" Win64="yes">
+        <File Id="UI__app_immutable_assets_6_Dx5z4boW_css" Name="6.Dx5z4boW.css" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/assets/6.Dx5z4boW.css" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_5yVdR1yS_js" Guid="{4D663014-BFCB-591B-9C67-CCFD852A725A}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_5yVdR1yS_js" Name="5yVdR1yS.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/5yVdR1yS.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_C5sHJJUi_js" Guid="{625E9299-10A6-5E4E-9FCB-9E60A7551584}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_C5sHJJUi_js" Name="C5sHJJUi.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/C5sHJJUi.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_C7_aOaNr_js" Guid="{E7A98B20-8B2B-5E8C-B16A-74343F82E6AD}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_C7_aOaNr_js" Name="C7-aOaNr.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/C7-aOaNr.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_CLJjet8S_js" Guid="{DBAF8280-D1A7-521B-AAD4-4830C59F1044}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_CLJjet8S_js" Name="CLJjet8S.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/CLJjet8S.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_COHfAiBm_js" Guid="{944B58D2-5802-53E2-9A2B-ED710D9129C9}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_COHfAiBm_js" Name="COHfAiBm.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/COHfAiBm.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_COfYIcnd_js" Guid="{FC5FDFB6-9CE1-5483-9B2D-E8B9EAD735D2}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_COfYIcnd_js" Name="COfYIcnd.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/COfYIcnd.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_CtX42DYM_js" Guid="{EFEDE067-CA4B-5030-B8C6-52CAD7B9BE64}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_CtX42DYM_js" Name="CtX42DYM.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/CtX42DYM.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_DAzP_nKY_js" Guid="{EFB0242D-F20A-5736-83DE-48D3BD2A1A9A}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_DAzP_nKY_js" Name="DAzP-nKY.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/DAzP-nKY.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_DDUsIosN_js" Guid="{4C674C59-A861-5A2E-845E-A563D05DC122}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_DDUsIosN_js" Name="DDUsIosN.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/DDUsIosN.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_DV6XEvTN_js" Guid="{F1249BE6-68AB-5D94-A9EC-E6CCAF094ACD}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_DV6XEvTN_js" Name="DV6XEvTN.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/DV6XEvTN.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_DWtxHite_js" Guid="{BA5C428E-C9ED-5B2C-88D8-E8464293DDBC}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_DWtxHite_js" Name="DWtxHite.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/DWtxHite.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_DYjbpYr8_js" Guid="{B14BB5DD-87E7-56EE-9DF4-DE95A33F2ED6}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_DYjbpYr8_js" Name="DYjbpYr8.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/DYjbpYr8.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_hcXFKcxN_js" Guid="{47602A17-1209-507C-BE8C-6F4BBFC4F17A}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_hcXFKcxN_js" Name="hcXFKcxN.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/hcXFKcxN.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_nKA9LGTx_js" Guid="{F029B820-A0B3-5C5F-BA5F-A52442C129B4}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_nKA9LGTx_js" Name="nKA9LGTx.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/nKA9LGTx.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_chunks">
+      <Component Id="Comp_UI__app_immutable_chunks_sCpmET8W_js" Guid="{01A8C952-82E1-5CB8-B1D6-AF7781FB15C5}" Win64="yes">
+        <File Id="UI__app_immutable_chunks_sCpmET8W_js" Name="sCpmET8W.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/chunks/sCpmET8W.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_entry">
+      <Component Id="Comp_UI__app_immutable_entry_app_B0KZvCUy_js" Guid="{5F563A15-AF45-5916-92EB-04DF88FE6818}" Win64="yes">
+        <File Id="UI__app_immutable_entry_app_B0KZvCUy_js" Name="app.B0KZvCUy.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/entry/app.B0KZvCUy.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_entry">
+      <Component Id="Comp_UI__app_immutable_entry_start_WVJYKfpB_js" Guid="{4873DA1D-804B-52C5-A610-E8DFBB277B58}" Win64="yes">
+        <File Id="UI__app_immutable_entry_start_WVJYKfpB_js" Name="start.WVJYKfpB.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/entry/start.WVJYKfpB.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_0_5fQQjHp__js" Guid="{6095622C-5C81-5E85-963B-C3FBA64E7D8A}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_0_5fQQjHp__js" Name="0.5fQQjHp-.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/0.5fQQjHp-.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_1_Cq7H_cSy_js" Guid="{05F5EEF0-A37E-50AD-924D-237F1A064A1F}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_1_Cq7H_cSy_js" Name="1.Cq7H-cSy.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/1.Cq7H-cSy.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_2_BimME4j4_js" Guid="{766E7A9A-E2DA-5681-85C3-345ACEFFE552}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_2_BimME4j4_js" Name="2.BimME4j4.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/2.BimME4j4.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_3_CV_XEuId_js" Guid="{804D83D7-C727-590C-83AD-AD81E2F186F4}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_3_CV_XEuId_js" Name="3.CV_XEuId.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/3.CV_XEuId.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_4_DFxmgf6X_js" Guid="{8397AB49-51A6-5110-831E-4622CF66B99E}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_4_DFxmgf6X_js" Name="4.DFxmgf6X.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/4.DFxmgf6X.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_5_CfyLtGGJ_js" Guid="{2FDB6A71-9B9A-5793-B31B-FA3FE3CB8E5E}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_5_CfyLtGGJ_js" Name="5.CfyLtGGJ.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/5.CfyLtGGJ.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir__app_immutable_nodes">
+      <Component Id="Comp_UI__app_immutable_nodes_6_ByzxFdOL_js" Guid="{F158D1DB-5BB9-519E-85DD-FC1538F0C910}" Win64="yes">
+        <File Id="UI__app_immutable_nodes_6_ByzxFdOL_js" Name="6.ByzxFdOL.js" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/_app/immutable/nodes/6.ByzxFdOL.js" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir_assets">
+      <Component Id="Comp_UI_assets_app_icon_jpg" Guid="{35434254-9869-50BA-9F36-9C451C8E3616}" Win64="yes">
+        <File Id="UI_assets_app_icon_jpg" Name="app-icon.jpg" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/assets/app-icon.jpg" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="UiDir_assets">
+      <Component Id="Comp_UI_assets_logo_jpg" Guid="{65077B34-748B-5D8E-8A33-1C6F5ECC9464}" Win64="yes">
+        <File Id="UI_assets_logo_jpg" Name="logo.jpg" Source="/home/user/workspace/cyberfence-endpoint-agent/dist/CyberFence-Endpoint-v0.1.0-Windows/ui/build/assets/logo.jpg" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="FeatureMain" Title="CyberFence Endpoint Protection Agent" Level="1">
+      <ComponentRef Id="CompAgent" />
+      <ComponentRef Id="CompUI" />
+      <ComponentRef Id="CompConfig" />
+      <ComponentRef Id="CompInstallBat" />
+      <ComponentRef Id="CompUninstallBat" />
+      <ComponentRef Id="CompTestEicar" />
+      <ComponentRef Id="CompReadme" />
+      <ComponentRef Id="CompStartMenu" />
+      <ComponentRef Id="CompDesktop" />
+    </Feature>
+
+    <Feature Id="FeatureEngine" Title="CyberFence Engine" Level="1">
+      <ComponentRef Id="Comp_Clam_ClamAV_README_md" />
+      <ComponentRef Id="Comp_Clam_clamconf_exe" />
+      <ComponentRef Id="Comp_Clam_clamd_exe" />
+      <ComponentRef Id="Comp_Clam_clamdscan_exe" />
+      <ComponentRef Id="Comp_Clam_clamscan_exe" />
+      <ComponentRef Id="Comp_Clam_freshclam_conf" />
+      <ComponentRef Id="Comp_Clam_freshclam_exe" />
+      <ComponentRef Id="Comp_Clam_concrt140" />
+      <ComponentRef Id="Comp_Clam_json_c" />
+      <ComponentRef Id="Comp_Clam_libbz2" />
+      <ComponentRef Id="Comp_Clam_libclamav" />
+      <ComponentRef Id="Comp_Clam_libclammspack" />
+      <ComponentRef Id="Comp_Clam_libclamunrar" />
+      <ComponentRef Id="Comp_Clam_libclamunrar_if" />
+      <ComponentRef Id="Comp_Clam_libcrypto" />
+      <ComponentRef Id="Comp_Clam_libcurl" />
+      <ComponentRef Id="Comp_Clam_libfreshclam" />
+      <ComponentRef Id="Comp_Clam_libssh2" />
+      <ComponentRef Id="Comp_Clam_libssl" />
+      <ComponentRef Id="Comp_Clam_libxml2" />
+      <ComponentRef Id="Comp_Clam_msvcp140" />
+      <ComponentRef Id="Comp_Clam_msvcp140_1" />
+      <ComponentRef Id="Comp_Clam_msvcp140_2" />
+      <ComponentRef Id="Comp_Clam_msvcp140_aw" />
+      <ComponentRef Id="Comp_Clam_msvcp140_cc" />
+      <ComponentRef Id="Comp_Clam_nghttp2" />
+      <ComponentRef Id="Comp_Clam_pcre2" />
+      <ComponentRef Id="Comp_Clam_pdcurses" />
+      <ComponentRef Id="Comp_Clam_pthreadVC3" />
+      <ComponentRef Id="Comp_Clam_update_defs" />
+      <ComponentRef Id="Comp_Clam_vcruntime140" />
+      <ComponentRef Id="Comp_Clam_vcruntime140_1" />
+      <ComponentRef Id="Comp_Clam_clamd_conf_sample" />
+      <ComponentRef Id="Comp_Clam_fc_conf_sample" />
+    </Feature>
+
+    <Feature Id="FeatureUI" Title="CyberFence Dashboard" Level="1">
+      <ComponentRef Id="Comp_UI_favicon_png" />
+      <ComponentRef Id="Comp_UI_history_html" />
+      <ComponentRef Id="Comp_UI_index_html" />
+      <ComponentRef Id="Comp_UI_scan_html" />
+      <ComponentRef Id="Comp_UI_settings_html" />
+      <ComponentRef Id="Comp_UI_threats_html" />
+      <ComponentRef Id="Comp_UI__app_env_js" />
+      <ComponentRef Id="Comp_UI__app_version_json" />
+      <ComponentRef Id="Comp_UI__app_immutable_assets_0_g7tg64KV_css" />
+      <ComponentRef Id="Comp_UI__app_immutable_assets_2_9eYqSlsS_css" />
+      <ComponentRef Id="Comp_UI__app_immutable_assets_3_C6Hqje78_css" />
+      <ComponentRef Id="Comp_UI__app_immutable_assets_4_CgGvBSr6_css" />
+      <ComponentRef Id="Comp_UI__app_immutable_assets_5_CrcOb_g3_css" />
+      <ComponentRef Id="Comp_UI__app_immutable_assets_6_Dx5z4boW_css" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_5yVdR1yS_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_C5sHJJUi_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_C7_aOaNr_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_CLJjet8S_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_COHfAiBm_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_COfYIcnd_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_CtX42DYM_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_DAzP_nKY_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_DDUsIosN_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_DV6XEvTN_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_DWtxHite_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_DYjbpYr8_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_hcXFKcxN_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_nKA9LGTx_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_chunks_sCpmET8W_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_entry_app_B0KZvCUy_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_entry_start_WVJYKfpB_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_0_5fQQjHp__js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_1_Cq7H_cSy_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_2_BimME4j4_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_3_CV_XEuId_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_4_DFxmgf6X_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_5_CfyLtGGJ_js" />
+      <ComponentRef Id="Comp_UI__app_immutable_nodes_6_ByzxFdOL_js" />
+      <ComponentRef Id="Comp_UI_assets_app_icon_jpg" />
+      <ComponentRef Id="Comp_UI_assets_logo_jpg" />
+    </Feature>
+
+  </Product>
+</Wix>

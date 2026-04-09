@@ -2,5 +2,5 @@ Dialog	HCentering	VCentering	Width	Height	Attributes	Title	Control_First	Control
 s72	i2	i2	i2	i2	I4	L128	s50	s50	S50
 Dialog	Dialog
 WelcomeDlg	50	50	370	270	3	[ProductName] Setup	BtnInstall	BtnInstall	BtnCancel
-ProgressDlg	50	50	370	270	3	[ProductName] Setup	BtnCancel	BtnCancel	BtnCancel
+ProgressDlg	50	50	370	270	5	Installing [ProductName]	BtnCancel	BtnCancel	BtnCancel
 ExitDlg	50	50	370	270	3	[ProductName] Setup	BtnFinish	BtnFinish	BtnFinish

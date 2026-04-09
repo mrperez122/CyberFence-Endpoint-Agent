@@ -7,7 +7,6 @@ ValidateProductID		700
 CostInitialize		800
 FileCost		900
 CostFinalize		1000
-ExecuteAction		1300
 WelcomeDlg	NOT Installed	1100
-ProgressDlg	1	1200
-ExitDlg		1301
+ExecuteAction		1300
+ExitDlg		1400

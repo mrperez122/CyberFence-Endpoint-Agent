@@ -1,0 +1,15 @@
+Property	Value
+s72	l0
+Property	Property
+UpgradeCode	{61C3AB38-E735-5962-B342-EB616B1B2EE2}
+ALLUSERS	1
+Manufacturer	Perez Technology Group, LLC
+ProductLanguage	1033
+ProductCode	{7B4C8D2E-9E1F-4A67-C234-56EF78901234}
+ProductName	CyberFence Endpoint Protection
+ProductVersion	0.3.0.0
+SecureCustomProperties	WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+ARPPRODUCTICON	AppIcon
+DefaultUIFont	DlgFont8
+ARPHELPLINK	https://www.cyberfenceplatform.com
+ARPURLINFOABOUT	https://www.cyberfenceplatform.com

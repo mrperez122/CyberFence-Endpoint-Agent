@@ -1,7 +1,8 @@
 Dialog_	Control_	Event	Argument	Condition	Ordering
 s72	s50	s50	s255	S255	I2
 ControlEvent	Dialog_	Control_	Event	Argument	Condition	Ordering
-WelcomeDlg	BtnInstall	EndDialog	Return	1	1
+WelcomeDlg	BtnInstall	SpawnWaitDialog	ProgressDlg	1	1
+WelcomeDlg	BtnInstall	EndDialog	Return	1	2
 WelcomeDlg	BtnCancel	EndDialog	Exit	1	1
 ProgressDlg	BtnCancel	EndDialog	Exit	1	1
 ExitDlg	BtnFinish	EndDialog	Return	1	1
