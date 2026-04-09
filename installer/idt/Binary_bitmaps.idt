@@ -1,0 +1,5 @@
+Name	Data
+s72	v0
+Binary	Name
+WixUI_Bmp_Banner	/home/user/workspace/cyberfence-endpoint-agent/installer/resources/banner.bmp
+WixUI_Bmp_Dialog	/home/user/workspace/cyberfence-endpoint-agent/installer/resources/dialog.bmp

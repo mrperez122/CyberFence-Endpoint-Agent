@@ -1,0 +1,29 @@
+Dialog_	Control	Type	X	Y	Width	Height	Attributes	Property	Text	Control_Next	Help
+s72	s50	s20	i2	i2	i2	i2	I4	S50	L0	S50	L50
+Control	Dialog_	Control
+WelcomeDlg	DialogBmp	Bitmap	0	0	164	270	1		WixUI_Bmp_Dialog	BtnInstall	
+WelcomeDlg	Title	Text	170	20	186	20	196608		{\DlgFontBig}CyberFence Endpoint Protection	BtnInstall	
+WelcomeDlg	Subtitle	Text	170	46	186	15	196608		{\DlgFont8}v0.2.0 — Real-Time Malware Protection	BtnInstall	
+WelcomeDlg	Description	Text	170	72	186	60	196608		Click Install to set up CyberFence Endpoint Protection on this computer. The CyberFence Engine will be installed alongside the dashboard and monitoring service.	BtnInstall	
+WelcomeDlg	BottomLine	Line	0	234	370	0	1			BtnInstall	
+WelcomeDlg	BtnInstall	PushButton	212	243	80	17	3		&Install	BtnCancel	
+WelcomeDlg	BtnBack	PushButton	156	243	56	17	1		&Back	BtnInstall	
+WelcomeDlg	BtnCancel	PushButton	304	243	56	17	3		Cancel	BtnInstall	
+ProgressDlg	BannerBmp	Bitmap	0	0	370	44	1		WixUI_Bmp_Banner	BtnCancel	
+ProgressDlg	BannerLine	Line	0	44	370	0	1			BtnCancel	
+ProgressDlg	BottomLine	Line	0	234	370	0	1			BtnCancel	
+ProgressDlg	TitleText	Text	20	15	330	20	196608		{\DlgFontTitle}Installing [ProductName]	BtnCancel	
+ProgressDlg	DescText	Text	20	60	330	20	196608		Please wait while the Setup Wizard installs [ProductName].	BtnCancel	
+ProgressDlg	StatusLabel	Text	20	100	50	10	196608		Status:	BtnCancel	
+ProgressDlg	ActionText	Text	70	100	285	10	196608		ActionText	BtnCancel	
+ProgressDlg	ProgressBar	ProgressBar	20	115	330	10	112		Progress	BtnCancel	
+ProgressDlg	BtnCancel	PushButton	304	243	56	17	3		Cancel	BtnCancel	
+ProgressDlg	BtnBack	PushButton	180	243	56	17	1		&Back	BtnCancel	
+ProgressDlg	BtnNext	PushButton	236	243	56	17	1		&Next	BtnCancel	
+ExitDlg	DialogBmp	Bitmap	0	0	164	270	1		WixUI_Bmp_Dialog	BtnFinish	
+ExitDlg	Title	Text	170	20	186	20	196608		{\DlgFontBig}Setup Complete	BtnFinish	
+ExitDlg	Description	Text	170	46	186	80	196608		CyberFence Endpoint Protection has been installed successfully. Click Finish to close this wizard.	BtnFinish	
+ExitDlg	Note	Text	170	140	186	60	196608		Next step: Open the engine folder and run update-definitions.bat to download the latest virus definitions.	BtnFinish	
+ExitDlg	BottomLine	Line	0	234	370	0	1			BtnFinish	
+ExitDlg	BtnFinish	PushButton	212	243	80	17	3		&Finish	BtnFinish	
+ExitDlg	BtnBack	PushButton	156	243	56	17	1		&Back	BtnFinish	

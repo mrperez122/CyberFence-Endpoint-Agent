@@ -1,13 +1,13 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "CyberFence Endpoint",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.cyberfence.endpoint",
 
   "build": {
-    "frontendDist":       "../build",
-    "devUrl":             "http://localhost:1420",
-    "beforeDevCommand":   "npm run dev",
+    "frontendDist": "../build",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
 
@@ -15,26 +15,26 @@
     "withGlobalTauri": true,
 
     "trayIcon": {
-      "id":             "cf-tray",
-      "iconPath":       "icons/tray-icon.png",
+      "id": "cf-tray",
+      "iconPath": "icons/tray-icon.png",
       "iconAsTemplate": false,
-      "tooltip":        "CyberFence Endpoint Protection"
+      "tooltip": "CyberFence Endpoint Protection"
     },
 
     "windows": [
       {
-        "label":        "main",
-        "title":        "CyberFence Endpoint Protection",
-        "width":        1000,
-        "height":       660,
-        "minWidth":     860,
-        "minHeight":    580,
-        "resizable":    true,
-        "visible":      true,
-        "decorations":  true,
-        "transparent":  false,
-        "center":       true,
-        "url":          "/"
+        "label": "main",
+        "title": "CyberFence Endpoint Protection",
+        "width": 1080,
+        "height": 700,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "visible": true,
+        "decorations": true,
+        "transparent": false,
+        "center": true,
+        "url": "/"
       }
     ],
 
@@ -56,10 +56,13 @@
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
-      "timestampUrl": "http://timestamp.digicert.com"
+      "timestampUrl": "http://timestamp.digicert.com",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
     },
     "shortDescription": "CyberFence Endpoint Protection — real-time malware scanning",
-    "longDescription":  "CyberFence Endpoint Protection Agent monitors your device in real-time, detecting and quarantining threats powered by the CyberFence Engine.",
+    "longDescription": "CyberFence Endpoint Protection Agent monitors your device in real-time, detecting and quarantining threats powered by the CyberFence Engine.",
     "copyright": "Copyright © 2026 Perez Technology Group, LLC",
     "category": "Security",
     "publisher": "Perez Technology Group, LLC",
