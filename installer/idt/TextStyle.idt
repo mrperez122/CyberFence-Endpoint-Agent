@@ -1,6 +1,6 @@
 TextStyle	FaceName	Size	Color	Bold	Italic	Underline	Strike
 s72	s72	i2	I4	I2	I2	I2	I2
 TextStyle	TextStyle
-DlgFont8	Segoe UI	8		0	0	0	0
-DlgFontBig	Segoe UI	14		1	0	0	0
-DlgFontTitle	Segoe UI	9		1	0	0	0
+DlgFont8	Segoe UI	8	0	0	0	0	0
+DlgFontBig	Segoe UI	14	0	1	0	0	0
+DlgFontTitle	Segoe UI	9	0	1	0	0	0

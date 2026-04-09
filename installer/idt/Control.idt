@@ -1,25 +1,27 @@
 Dialog_	Control	Type	X	Y	Width	Height	Attributes	Property	Text	Control_Next	Help
 s72	s50	s20	i2	i2	i2	i2	I4	S50	L0	S50	L50
 Control	Dialog_	Control
+WelcomeDlg	DialogBmp	Bitmap	0	0	164	270	1		WixUI_Bmp_Dialog	Title	
+WelcomeDlg	Title	Text	175	15	181	30	196611		{\DlgFontBig}CyberFence Endpoint Protection	Subtitle	
+WelcomeDlg	Subtitle	Text	175	48	181	12	196611		{\DlgFont8}Version 0.3.0  |  Real-Time Malware Protection	Description	
+WelcomeDlg	Description	Text	175	70	181	100	196611		This wizard will install CyberFence Endpoint Protection on your computer, including the CyberFence Engine and background monitoring service.
+
+Click Install to continue or Cancel to exit.	BottomLine	
+WelcomeDlg	BottomLine	Line	0	234	370	0	1			BtnInstall	
 WelcomeDlg	BtnInstall	PushButton	212	243	80	17	3		&Install	BtnCancel	
 WelcomeDlg	BtnCancel	PushButton	304	243	56	17	3		Cancel	DialogBmp	
-WelcomeDlg	DialogBmp	Bitmap	0	0	164	270	1		WixUI_Bmp_Dialog	Title	
-WelcomeDlg	Title	Text	170	20	186	20	196608		{\DlgFontBig}CyberFence Endpoint Protection	Subtitle	
-WelcomeDlg	Subtitle	Text	170	46	186	15	196608		{\DlgFont8}Version 0.3.0	Description	
-WelcomeDlg	Description	Text	170	72	186	80	196608		Welcome to the CyberFence Endpoint Protection Setup Wizard. Click Install to begin.	BottomLine	
-WelcomeDlg	BottomLine	Line	0	234	370	0	1			BtnInstall	
-ProgressDlg	BtnCancel	PushButton	304	243	56	17	3		Cancel	BannerBmp	
 ProgressDlg	BannerBmp	Bitmap	0	0	370	44	1		WixUI_Bmp_Banner	BannerLine	
 ProgressDlg	BannerLine	Line	0	44	370	0	1			TitleText	
-ProgressDlg	TitleText	Text	20	15	330	20	196608		{\DlgFontTitle}Installing [ProductName]	DescText	
-ProgressDlg	DescText	Text	20	60	330	30	196608		Please wait while CyberFence Endpoint Protection is being installed.	StatusLabel	
-ProgressDlg	StatusLabel	Text	20	100	50	10	196608		Status:	ActionData	
-ProgressDlg	ActionData	Text	70	100	265	30	196608	ActionData		ProgressBar	
-ProgressDlg	ProgressBar	ProgressBar	20	120	330	10	112		Progress done	BottomLine	
+ProgressDlg	TitleText	Text	20	15	330	20	196611		{\DlgFontTitle}Installing [ProductName]	DescText	
+ProgressDlg	DescText	Text	20	60	330	20	196611		Please wait while [ProductName] is being installed.	StatusLabel	
+ProgressDlg	StatusLabel	Text	20	105	50	10	196611		Status:	ActionData	
+ProgressDlg	ActionData	Text	74	105	266	10	196611	ActionData		ProgressBar	
+ProgressDlg	ProgressBar	ProgressBar	20	120	330	15	83		Progress done	BottomLine	
 ProgressDlg	BottomLine	Line	0	234	370	0	1			BtnCancel	
-ExitDlg	BtnFinish	PushButton	212	243	80	17	3		&Finish	DialogBmp	
+ProgressDlg	BtnCancel	PushButton	304	243	56	17	3		Cancel	BannerBmp	
 ExitDlg	DialogBmp	Bitmap	0	0	164	270	1		WixUI_Bmp_Dialog	Title	
-ExitDlg	Title	Text	170	20	186	20	196608		{\DlgFontBig}Installation Complete	Description	
-ExitDlg	Description	Text	170	46	186	80	196608		CyberFence Endpoint Protection has been installed successfully.	Note	
-ExitDlg	Note	Text	170	140	186	60	196608		Next: Run engine\\update-definitions.bat as Administrator to download virus definitions.	BottomLine	
+ExitDlg	Title	Text	175	15	181	20	196611		{\DlgFontBig}Installation Complete	Description	
+ExitDlg	Description	Text	175	45	181	60	196611		CyberFence Endpoint Protection has been successfully installed on your computer.	Note	
+ExitDlg	Note	Text	175	120	181	70	196611		Next step: Run engine\update-definitions.bat as Administrator to download the latest virus definitions before your first scan.	BottomLine	
 ExitDlg	BottomLine	Line	0	234	370	0	1			BtnFinish	
+ExitDlg	BtnFinish	PushButton	212	243	80	17	3		&Finish	DialogBmp	

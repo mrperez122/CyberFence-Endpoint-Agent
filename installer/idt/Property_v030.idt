@@ -12,4 +12,3 @@ SecureCustomProperties	WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
 ARPPRODUCTICON	AppIcon
 DefaultUIFont	DlgFont8
 ARPHELPLINK	https://www.cyberfenceplatform.com
-ARPURLINFOABOUT	https://www.cyberfenceplatform.com
