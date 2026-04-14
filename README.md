@@ -1,290 +1,121 @@
-# CyberFence Endpoint Protection Agent
+# CyberFence Endpoint Agent
 
-Real-time endpoint protection for Windows and macOS.
-Built with **Rust** · **Tauri 2** · **CyberFence Engine** · **CrowdSec**
-
----
-
-## Current Status
-
-| Component | Crate | Status | Phase |
-|-----------|-------|--------|-------|
-| Shared event types | `cf-common` | ✅ Complete | 1 |
-| Config loader | `cf-config` | ✅ Complete | 1 |
-| File system monitor | `cf-monitor` | ✅ Complete | 1 |
-| Structured logger | `cf-logger` | ✅ Complete | 1 |
-| Windows background service | `agent/service.rs` | ✅ Complete | 2 |
-| CyberFence scan engine | `cf-scanner` | ✅ Complete | 2 |
-| Heuristics engine | `cf-heuristics` | 🔜 Sprint 4 | 2 |
-| Threat broker | `cf-broker` | 🔜 Sprint 4 | 2 |
-| Tauri dashboard UI | `ui/` | 🔜 Sprint 7 | 3 |
+Real-time endpoint protection agent for Windows and macOS, built with Rust and Tauri 2. Developed by **Perez Technology Group (PTG)** as part of the CyberFence security platform.
 
 ---
 
-## Architecture
+## Overview
+
+The CyberFence Endpoint Agent monitors the local filesystem and system events in real time, correlating threat signals against the CrowdSec intelligence network. A native desktop UI (Tauri 2) surfaces alerts, agent status, and configuration options to the end user.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Rust (multi-crate workspace) |
+| Desktop UI | Tauri 2 |
+| Threat Intelligence | CrowdSec |
+| Platform | Windows, macOS |
+
+---
+
+## Workspace Crates
+
+| Crate | Purpose |
+|---|---|
+| `cf-common` | Shared event types, error definitions, and data structures |
+| `cf-config` | Configuration loader — reads and validates agent config files |
+| `cf-monitor` | Filesystem monitor — watches paths for suspicious activity |
+| `cf-logger` | Structured logging — outputs JSON-formatted logs for SIEM ingestion |
+
+---
+
+## Repository Structure
 
 ```
-Windows SCM / Ctrl-C
-  ↓
-agent/src/main.rs        ← dual-mode: service OR console
-  ↓
-run_agent()              ← tokio multi-thread runtime
-  ├─ FileMonitor         ← notify-rs → ReadDirectoryChangesW
-  │     ↓ FileEvent [MPSC, cap=2000]
-  ├─ EventFanout         ← fan-out to multiple consumers
-  │     ├─ EventLogger   ← JSONL audit log to disk
-  │     └─ ScanEngine    ← CyberFence Engine (ClamAV subprocess)
-  │            ↓ ScanResult
-  └─ ScanResultWorker    ← log threats, future: quarantine + broker
+CyberFence-Endpoint-Agent/
+├── Cargo.toml                # Workspace manifest
+├── cf-common/
+│   └── src/lib.rs            # Shared types and events
+├── cf-config/
+│   └── src/lib.rs            # Config parsing
+├── cf-monitor/
+│   └── src/lib.rs            # Filesystem monitoring logic
+├── cf-logger/
+│   └── src/lib.rs            # Structured logging
+├── src-tauri/                # Tauri 2 shell (desktop UI)
+│   ├── src/
+│   ├── tauri.conf.json
+│   └── Cargo.toml
+├── ui/                       # Frontend for Tauri window
+│   └── src/
+└── package.json
 ```
 
 ---
 
-## Quick Start
+## Setup Instructions
 
 ### Prerequisites
 
-- [Rust stable](https://rustup.rs/) 1.76+
-- Windows 10/11 (for service mode) or any OS (for console mode)
-- CyberFence Engine (ClamAV) — see [Engine Setup](#cyberFence-engine-setup) below
+- [Rust](https://rustup.rs/) (stable toolchain)
+- [Node.js](https://nodejs.org/) 18+
+- [Tauri CLI v2](https://tauri.app/start/prerequisites/)
+- Windows: Microsoft C++ Build Tools
+- macOS: Xcode Command Line Tools
+- A CrowdSec account (for threat intelligence API key)
 
-### Run in console mode (development)
+### Steps
 
-```bash
-# Clone
-git clone https://github.com/mrperez122/CyberFence-Endpoint-Agent
-cd CyberFence-Endpoint-Agent
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mrperez122/CyberFence-Endpoint-Agent.git
+   cd CyberFence-Endpoint-Agent
+   ```
 
-# Run with debug logging
-RUST_LOG=debug cargo run --bin cf-agent
+2. Install frontend dependencies:
+   ```bash
+   npm install
+   ```
 
-# Or default INFO level
-cargo run --bin cf-agent
-```
+3. Configure the agent:
+   ```bash
+   cp config.example.toml config.toml
+   ```
+   Set your CrowdSec API key and monitored paths in `config.toml`.
 
-The agent starts monitoring **Downloads**, **Desktop**, and **Documents** immediately.
-Drop a file into any of those directories — you will see structured log output.
+4. Run in development mode:
+   ```bash
+   npm run tauri dev
+   ```
 
-### Run all tests
-
-```bash
-cargo test --workspace
-```
-
-### Run integration tests (file monitoring)
-
-```bash
-cargo test --test monitor_integration -- --nocapture
-```
-
-Integration tests use real temp directories and verify:
-- File created → `FileEvent::Created` received within 3 seconds
-- File deleted → `FileEvent::Deleted` received
-- `.log` extension → event filtered out (excluded)
-- `.exe` created → `is_scannable()` returns `true`
-- Multiple events → all IDs are unique UUIDs
+5. Build for production:
+   ```bash
+   npm run tauri build
+   ```
+   Output installers will be in `src-tauri/target/release/bundle/`.
 
 ---
 
-## Windows Background Service
+## CrowdSec Integration
 
-### Install as Windows Service (run as Administrator)
-
-```cmd
-REM Build the release binary first
-cargo build --release --bin cf-agent
-
-REM Copy to install location
-mkdir "C:\Program Files\CyberFence"
-copy target\release\cf-agent.exe "C:\Program Files\CyberFence\"
-copy config.toml "%PROGRAMDATA%\CyberFence\config.toml"
-
-REM Register with Windows Service Control Manager
-sc create CyberFenceAgent ^
-    binPath= "\"C:\Program Files\CyberFence\cf-agent.exe\"" ^
-    start= auto ^
-    DisplayName= "CyberFence Endpoint Agent"
-
-sc description CyberFenceAgent "CyberFence Endpoint Protection — real-time file monitoring and malware scanning"
-
-REM Start the service
-sc start CyberFenceAgent
-```
-
-### Verify it's running
-
-```cmd
-sc query CyberFenceAgent
-```
-
-Expected output:
-```
-SERVICE_NAME: CyberFenceAgent
-        TYPE               : 10  WIN32_OWN_PROCESS
-        STATE              : 4  RUNNING
-```
-
-### View logs
-
-```cmd
-REM View today's log
-type "%APPDATA%\CyberFence\logs\agent-2026-04-07.jsonl"
-
-REM Stream logs in real-time (PowerShell)
-Get-Content "%APPDATA%\CyberFence\logs\agent-2026-04-07.jsonl" -Wait
-```
-
-### Stop and uninstall
-
-```cmd
-sc stop CyberFenceAgent
-sc delete CyberFenceAgent
-```
+The agent queries the [CrowdSec](https://www.crowdsec.net/) Central API to enrich local events with globally-sourced threat intelligence. IP addresses and behavioral patterns observed on the endpoint are cross-referenced against CrowdSec's community blocklists.
 
 ---
 
-## Dual-Mode Detection
+## CyberFence Platform
 
-The binary auto-detects whether it's running as a Windows Service or in console mode:
+| Repository | Description |
+|---|---|
+| [CyberFence-For-Flutter](https://github.com/mrperez122/CyberFence-For-Flutter) | Active iOS + Android app |
+| [CyberFence-for-Mac](https://github.com/mrperez122/CyberFence-for-Mac) | Native macOS app |
+| [Cyberfence-Analytics-Web-App](https://github.com/mrperez122/Cyberfence-Analytics-Web-App) | Analytics dashboard |
 
-```
-cf-agent.exe launched
-    │
-    ├─ Is the SCM trying to start us?
-    │   YES → service::try_start_as_service() → SCM takes over → run_agent()
-    │   NO  → console mode → build tokio runtime directly → run_agent()
-    └─────────────────────────────────────────────────────────────────────
-```
-
-**Development:** just `cargo run` — always console mode, Ctrl-C to stop.
-**Production:** `sc start CyberFenceAgent` — service mode, controlled by SCM.
+**Website:** [https://cyberfenceplatform.com](https://cyberfenceplatform.com)  
+**Support:** support@cyberfenceplatform.com
 
 ---
 
-## CyberFence Engine Setup
-
-### Windows
-
-```cmd
-REM Using Chocolatey
-choco install clamav -y
-
-REM Download definitions (required before first scan)
-freshclam.exe
-```
-
-### macOS
-
-```bash
-brew install clamav
-cp /opt/homebrew/etc/clamav/freshclam.conf.sample /opt/homebrew/etc/clamav/freshclam.conf
-# Remove the "Example" line from freshclam.conf, then:
-freshclam
-```
-
-If ClamAV is not found, the agent runs in **monitor-only mode**:
-file events are logged but not scanned. A `WARN` is written to the log.
-
----
-
-## Configuration
-
-Copy `config.toml` to the platform config directory:
-
-| Platform | Path |
-|----------|------|
-| Windows | `%PROGRAMDATA%\CyberFence\config.toml` |
-| macOS | `/etc/cyberfence/config.toml` |
-| Dev | Project root (auto-loaded) |
-
-Key settings:
-
-```toml
-log_level = "INFO"   # TRACE / DEBUG / INFO / WARN / ERROR
-
-[monitor]
-debounce_ms      = 250    # merge burst events on the same file
-ring_buffer_cap  = 2000   # max queued unprocessed events
-max_file_size_mb = 256    # skip very large files from scanning
-
-[scanner]
-enabled          = true   # set false to disable scanning entirely
-timeout_secs     = 30     # per-file scan timeout
-```
-
----
-
-## Log Output
-
-Every file event is written as one JSON line:
-
-```jsonc
-{
-  "timestamp": "2026-04-07T14:00:00.123Z",
-  "level": "INFO",
-  "target": "cf_logger::event_logger",
-  "message": "FILE_EVENT",
-  "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "kind": "CREATED",
-  "path": "C:\\Users\\Carlos\\Downloads\\setup.exe",
-  "extension": "exe",
-  "size_bytes": 2048576,
-  "watch_root": "C:\\Users\\Carlos\\Downloads",
-  "scan_readiness": "PendingScan",
-  "is_scannable": true
-}
-```
-
-Parse with `jq`:
-
-```bash
-# macOS / Linux dev
-tail -f /tmp/cyberfence/logs/agent-$(date +%Y-%m-%d).jsonl | jq '.'
-
-# Windows PowerShell
-Get-Content "$env:APPDATA\CyberFence\logs\agent-$(Get-Date -f yyyy-MM-dd).jsonl" -Wait |
-    ForEach-Object { $_ | ConvertFrom-Json }
-```
-
----
-
-## Project Structure
-
-```
-cyberfence-endpoint-agent/
-├── Cargo.toml                     workspace root
-├── config.toml                    default config (dev)
-│
-├── crates/
-│   ├── cf-common/                 FileEvent, ScanResult, CfError, Severity
-│   ├── cf-config/                 TOML config + platform path resolution
-│   ├── cf-monitor/                file watcher (notify-rs, filter, debounce)
-│   ├── cf-scanner/                CyberFence Engine + quarantine
-│   └── cf-logger/                 tracing subscriber + JSONL log
-│
-├── agent/
-│   ├── src/
-│   │   ├── main.rs                entry point — dual console/service mode
-│   │   └── service.rs             Windows Service wrapper (SCM integration)
-│   └── tests/
-│       └── monitor_integration.rs integration tests (real FS operations)
-│
-└── ui/                            Tauri 2 dashboard (Phase 3)
-```
-
----
-
-## Phase 3 Integration Points
-
-The file monitor is pre-wired for the scanner and UI:
-
-- `FileEvent.is_scannable()` → scanner reads this to decide whether to process
-- `ScanReadiness::PendingScan` → pre-tagged on every scannable event
-- `EventFanout` → already broadcasts to scanner channel; add UI channel in Phase 3
-- Named pipe IPC server (`agent/ipc_server.rs`) — stub ready for Phase 3
-
----
-
-## License
-
-UNLICENSED — Proprietary. © 2026 CyberFence / Perez Technology Group.
+*Perez Technology Group (PTG) — Orlando, FL*
